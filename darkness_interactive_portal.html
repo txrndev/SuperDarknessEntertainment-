@@ -1,0 +1,3813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Darkness // Obsidian Web Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & DYNAMIC THEME VARIABLES
+       ========================================================================== */
+    :root {
+      --bg-obsidian: #000000;
+      --surface-glass: rgba(10, 11, 16, 0.84);
+      --surface-elevated: rgba(16, 18, 26, 0.94);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+
+      /* Active Theme Palette (Default: Obsidian) */
+      --accent: #e2e8f0;
+      --accent-rgb: 226, 232, 240;
+      --accent-2: #38bdf8;
+      --accent-2-rgb: 56, 189, 248;
+
+      --font-cursive: 'Great Vibes', cursive;
+      --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100vh;
+      width: 100%;
+      background-color: var(--bg-obsidian);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    ::selection {
+      background: rgba(var(--accent-rgb), 0.32);
+      color: #ffffff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030306;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(var(--accent-rgb), 0.34);
+      border-radius: 999px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ==========================================================================
+       2. ANIMATED STARFIELD CANVAS & ATMOSPHERIC GLOW
+       ========================================================================== */
+    #starfield-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
+      background: #000000;
+    }
+
+    .obsidian-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(var(--accent-rgb), 0.085) 0%, transparent 52%),
+        radial-gradient(circle at 18% 82%, rgba(var(--accent-2-rgb), 0.045) 0%, transparent 45%),
+        radial-gradient(circle at 84% 78%, rgba(var(--accent-rgb), 0.04) 0%, transparent 45%);
+      transition: background 0.45s ease;
+    }
+
+    /* ==========================================================================
+       3. GLASSMORPHISM SURFACES, BUTTONS & INPUTS
+       ========================================================================== */
+    .glass-panel {
+      background: var(--surface-glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(var(--accent-rgb), 0.22);
+      box-shadow:
+        0 20px 55px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      background: rgba(var(--accent-rgb), 0.08);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.16s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(var(--accent-rgb), 0.18);
+      border-color: rgba(var(--accent-rgb), 0.65);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.24);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.32), rgba(var(--accent-rgb), 0.14));
+      border-color: rgba(var(--accent-rgb), 0.65);
+      box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.22);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.45), rgba(var(--accent-rgb), 0.22));
+      border-color: var(--accent);
+      box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.38);
+    }
+
+    .btn-sm {
+      padding: 6px 11px;
+      font-size: 0.77rem;
+      border-radius: 8px;
+    }
+
+    .btn-gold {
+      border-color: rgba(251, 191, 36, 0.5);
+      background: rgba(251, 191, 36, 0.14);
+      color: #fde68a;
+    }
+
+    .btn-gold:hover {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.25);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.28);
+    }
+
+    .btn-danger {
+      border-color: rgba(244, 63, 94, 0.45);
+      background: rgba(244, 63, 94, 0.14);
+      color: #fda4af;
+    }
+
+    .btn-danger:hover {
+      border-color: #fb7185;
+      background: rgba(244, 63, 94, 0.26);
+    }
+
+    .input {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(var(--accent-rgb), 0.24);
+      background: rgba(4, 5, 10, 0.92);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.16);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+    .shake {
+      animation: shake 0.36s ease;
+    }
+
+    /* ==========================================================================
+       4. FULL-SCREEN ENTRY GATE & ADMIN LOCKDOWN OVERLAY
+       ========================================================================== */
+    .overlay-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 9500;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .gate-card {
+      width: 100%;
+      max-width: 540px;
+      border-radius: var(--radius-lg);
+      padding: 34px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gate-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 14%;
+      right: 14%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .gate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 540px) {
+      .gate-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .gate-option {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .gate-option:hover {
+      background: rgba(var(--accent-rgb), 0.1);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 22px rgba(var(--accent-rgb), 0.2);
+    }
+
+    .gate-option.admin-card:hover {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.08);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 22px rgba(251, 191, 36, 0.2);
+    }
+
+    /* ==========================================================================
+       5. TOP BAR, LIVE BROADCAST BANNER & ADMIN DRAWER
+       ========================================================================== */
+    .app-shell {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 11px 22px;
+      background: rgba(0, 0, 0, 0.86);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(var(--accent-rgb), 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .brand-emblem {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.42);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-cursive);
+      font-size: 1.55rem;
+      color: #fff;
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 13px;
+      border-radius: var(--radius-pill);
+      background: rgba(var(--accent-rgb), 0.1);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .role-badge.is-admin {
+      background: rgba(251, 191, 36, 0.14);
+      border-color: rgba(251, 191, 36, 0.55);
+      color: #fde68a;
+    }
+
+    .role-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 9px var(--accent-2);
+    }
+
+    .role-badge.is-admin .role-dot {
+      background: #fbbf24;
+      box-shadow: 0 0 9px #fbbf24;
+    }
+
+    /* Glowing Live Broadcast Banner */
+    .announce-banner-wrap {
+      width: 100%;
+      max-width: 1200px;
+      margin: 14px auto 0;
+      padding: 0 18px;
+    }
+
+    .announce-banner {
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.2), rgba(14, 16, 26, 0.94));
+      border: 1px solid rgba(var(--accent-rgb), 0.65);
+      box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.26);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: slideDown 0.25s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .live-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.69rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      color: #fda4af;
+    }
+
+    .live-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #f43f5e;
+      box-shadow: 0 0 8px #f43f5e;
+    }
+
+    /* Admin Quick Drawer */
+    .admin-drawer-wrap {
+      width: 100%;
+      max-width: 1200px;
+      margin: 12px auto 0;
+      padding: 0 18px;
+    }
+
+    .admin-drawer-card {
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: rgba(9, 10, 15, 0.96);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.92);
+    }
+
+    .terminal-box {
+      height: 135px;
+      overflow-y: auto;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #020205;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      font-family: var(--font-mono);
+      font-size: 0.77rem;
+      line-height: 1.55;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* ==========================================================================
+       6. HERO HEADER ("Darkness") & NAVIGATION TABS
+       ========================================================================== */
+    .portal-container {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px 18px 68px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .darkness-title {
+      font-family: var(--font-cursive);
+      font-size: clamp(4.6rem, 12vw, 7.6rem);
+      font-weight: 400;
+      line-height: 1.02;
+      color: #ffffff;
+      user-select: none;
+      text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.94),
+        0 0 28px rgba(var(--accent-rgb), 0.88),
+        0 0 58px rgba(var(--accent-rgb), 0.56),
+        0 0 98px rgba(var(--accent-rgb), 0.34);
+      animation: floatLogo 4.6s ease-in-out infinite;
+      transition: text-shadow 0.4s ease;
+    }
+
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .hero-tagline {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* 4 Primary Navigation Tabs */
+    .main-nav-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 24px;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .nav-tab-btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.77rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab-btn:hover {
+      color: #ffffff;
+      background: rgba(var(--accent-rgb), 0.1);
+    }
+
+    .nav-tab-btn.is-active {
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.32), rgba(var(--accent-rgb), 0.14));
+      border-color: rgba(var(--accent-rgb), 0.65);
+      box-shadow: 0 0 22px rgba(var(--accent-rgb), 0.28);
+    }
+
+    .tab-section {
+      width: 100%;
+      animation: slideDown 0.25s ease;
+    }
+
+    /* ==========================================================================
+       7. ENTERTAINMENT HUB (DUAL-COLUMN WATCHLIST)
+       ========================================================================== */
+    .ent-toolbar {
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .ent-search-wrap {
+      flex: 1;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .filter-pill {
+      padding: 7px 13px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(var(--accent-rgb), 0.24);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .filter-pill:hover {
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .filter-pill.is-active {
+      background: rgba(var(--accent-rgb), 0.22);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.25);
+    }
+
+    .ent-columns-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 920px) {
+      .ent-columns-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ent-column-card {
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .ent-col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .count-badge {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.38);
+      color: var(--accent);
+    }
+
+    .add-ent-form {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 1.1fr 118px auto;
+      gap: 7px;
+    }
+
+    @media (max-width: 620px) {
+      .add-ent-form {
+        grid-template-columns: 1fr 1fr;
+      }
+      .add-ent-form button[type="submit"] {
+        grid-column: span 2;
+      }
+    }
+
+    .ent-scroll-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 540px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .ent-card {
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.028);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.16s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .ent-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(var(--accent-rgb), 0.52);
+      background: rgba(var(--accent-rgb), 0.08);
+    }
+
+    .ent-title-link {
+      font-weight: 700;
+      font-size: 0.93rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: inline-block;
+      transition: color 0.16s ease;
+    }
+
+    .ent-title-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .tag-chip {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(var(--accent-rgb), 0.13);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      color: var(--accent);
+    }
+
+    /* Interactive Status Badges */
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.14s ease, filter 0.18s ease;
+    }
+
+    .status-badge:hover {
+      filter: brightness(1.18);
+      transform: scale(1.03);
+    }
+
+    .status-watching {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+    }
+
+    .status-completed {
+      background: rgba(52, 211, 153, 0.16);
+      border-color: rgba(52, 211, 153, 0.45);
+      color: #6ee7b7;
+    }
+
+    .status-plan {
+      background: rgba(251, 191, 36, 0.16);
+      border-color: rgba(251, 191, 36, 0.45);
+      color: #fde68a;
+    }
+
+    /* ==========================================================================
+       8. GAME SANDBOX (GEOMETRY DASH, NEON SNAKE, VOID STAR SHOOTER, LOADER)
+       ========================================================================== */
+    .game-sandbox-card {
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .game-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(var(--accent-rgb), 0.18);
+    }
+
+    .game-arena-box {
+      border-radius: var(--radius-md);
+      background: rgba(4, 5, 10, 0.96);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .game-arena-box.is-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      padding: 16px !important;
+      background: #000000 !important;
+    }
+
+    .game-arena-box.is-fullscreen .viewport-frame {
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+    }
+
+    .viewport-frame {
+      position: relative;
+      width: 100%;
+      height: 410px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #020206;
+      border: 1px solid rgba(var(--accent-rgb), 0.24);
+    }
+
+    .viewport-frame canvas,
+    .viewport-frame iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .dropzone-area {
+      border: 2px dashed rgba(var(--accent-rgb), 0.42);
+      border-radius: var(--radius-md);
+      padding: 24px 16px;
+      text-align: center;
+      background: rgba(var(--accent-rgb), 0.04);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dropzone-area:hover,
+    .dropzone-area.drag-over {
+      border-color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.14);
+      box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.26);
+    }
+
+    /* ==========================================================================
+       9. STUDY & TOOLS MODULE (SCIENTIFIC CALCULATOR + STUDY HELP SUITE)
+       ========================================================================== */
+    .study-tools-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .study-tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .calc-panel {
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .calc-display {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(2, 3, 7, 0.95);
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      text-align: right;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+    }
+
+    .calc-keypad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+
+    .calc-key {
+      padding: 11px 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .calc-key:hover {
+      background: rgba(var(--accent-rgb), 0.18);
+      border-color: rgba(var(--accent-rgb), 0.5);
+    }
+
+    .calc-key.op {
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.09);
+    }
+
+    .calc-key.eq {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.38), rgba(var(--accent-rgb), 0.18));
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .calc-key.clr {
+      color: #fda4af;
+      border-color: rgba(244, 63, 94, 0.38);
+      background: rgba(244, 63, 94, 0.12);
+    }
+
+    .study-suite-panel {
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .flashcard-stage {
+      height: 195px;
+      perspective: 1000px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .flashcard-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-style: preserve-3d;
+    }
+
+    .flashcard-flipper.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      background: rgba(11, 13, 22, 0.95);
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .flashcard-back {
+      transform: rotateY(180deg);
+      background: rgba(var(--accent-rgb), 0.12);
+      border-color: var(--accent);
+    }
+
+    /* ==========================================================================
+       10. THEMES & ADMIN TAB + TOAST STACK
+       ========================================================================== */
+    .themes-admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 920px) {
+      .themes-admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .theme-swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 480px) {
+      .theme-swatch-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .theme-card-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .theme-card-btn:hover,
+    .theme-card-btn.is-active {
+      border-color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.14);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.24);
+    }
+
+    .toast-stack {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 340px;
+      pointer-events: none;
+    }
+
+    .toast-item {
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: rgba(10, 12, 20, 0.96);
+      border: 1px solid rgba(var(--accent-rgb), 0.48);
+      color: #f8fafc;
+      font-size: 0.83rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.92);
+      animation: slideDown 0.22s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated 60fps Starfield Canvas -->
+  <canvas id="starfield-canvas"></canvas>
+  <div class="obsidian-vignette"></div>
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       1. FULL-SCREEN ENTRY GATE (GUEST / ADMIN ACCESS)
+       ======================================================================== -->
+  <div id="entry-gate" class="overlay-gate" role="dialog" aria-modal="true" aria-labelledby="gate-heading">
+    <div id="gate-card" class="gate-card glass-panel">
+      <div style="text-align: center;">
+        <div class="role-badge" style="margin-bottom: 10px;">
+          <span class="role-dot"></span>
+          <span>OBSIDIAN GATEWAY // CLEARANCE CHECK</span>
+        </div>
+        <h2 id="gate-heading" style="font-family: var(--font-cursive); font-size: 4rem; line-height: 1.02; color: #fff; text-shadow: 0 0 14px rgba(255,255,255,0.88), 0 0 34px rgba(var(--accent-rgb),0.75);">
+          Darkness
+        </h2>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+          Select Guest mode for standard access or authenticate as Admin.
+        </p>
+      </div>
+
+      <div class="gate-grid">
+        <!-- Guest Option -->
+        <div class="gate-option">
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 8px;">👤</div>
+            <div style="font-weight: 700; font-size: 1.04rem; margin-bottom: 4px;">Enter as Guest</div>
+            <div style="font-size: 0.79rem; color: var(--text-secondary);">
+              Access Entertainment Hub, Game Sandbox, Study &amp; Tools, and Theme Customizer.
+            </div>
+          </div>
+          <button id="btn-enter-guest" type="button" class="btn btn-primary" style="width: 100%;">
+            Enter as Guest →
+          </button>
+        </div>
+
+        <!-- Admin Option -->
+        <div class="gate-option admin-card">
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 8px;">🔑</div>
+            <div style="font-weight: 700; font-size: 1.04rem; margin-bottom: 4px;">Admin Access</div>
+            <div style="font-size: 0.79rem; color: var(--text-secondary);">
+              Unlock live broadcast announcements, site lockdown controls, and CLI commands.
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <input id="gate-admin-pass" type="password" class="input" placeholder="Admin password..." autocomplete="off" />
+            <button id="btn-enter-admin" type="button" class="btn btn-gold" style="width: 100%;">
+              Unlock Admin →
+            </button>
+            <div id="gate-admin-error" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fb7185; min-height: 1em;"></div>
+          </div>
+        </div>
+      </div>
+
+      <label style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+        <input id="chk-remember-session" type="checkbox" checked style="accent-color: var(--accent);" />
+        <span>Remember session on this browser</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       2. PORTAL LOCKED BY ADMIN OVERLAY (SHOWN TO GUESTS WHEN /lock IS ACTIVE)
+       ======================================================================== -->
+  <div id="guest-lock-overlay" class="overlay-gate hidden" role="alertdialog" aria-modal="true">
+    <div class="gate-card glass-panel" style="max-width: 460px; text-align: center; border-color: rgba(251, 191, 36, 0.55);">
+      <div style="font-size: 2.4rem; margin-bottom: 10px;">🔒</div>
+      <div class="role-badge is-admin" style="margin-bottom: 12px;">
+        <span>SYSTEM LOCKDOWN ACTIVE</span>
+      </div>
+      <h2 style="font-size: 1.45rem; font-weight: 700; margin-bottom: 8px;">Portal Locked by Admin</h2>
+      <p style="font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 20px;">
+        Guest access has been temporarily suspended by an administrator. Please stand by until the portal is unlocked, or sign in with Admin clearance.
+      </p>
+      <button id="btn-lock-switch-admin" type="button" class="btn btn-gold">
+        Switch to Admin Access
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       3. MAIN APPLICATION SHELL
+       ======================================================================== -->
+  <div class="app-shell">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button id="btn-brand-home" type="button" class="brand-link" title="Return to Entertainment Hub">
+        <span class="brand-emblem">D</span>
+        <span style="font-family: var(--font-cursive); font-size: 1.65rem; line-height: 1;">Darkness</span>
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <button id="btn-top-admin-drawer" type="button" class="btn btn-sm btn-gold hidden">
+          ⌘ Admin Console
+        </button>
+
+        <div id="topbar-role-badge" class="role-badge">
+          <span class="role-dot"></span>
+          <span id="topbar-role-label">GUEST</span>
+        </div>
+
+        <button id="btn-switch-role" type="button" class="btn btn-sm">
+          Switch Role / Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Live Broadcast Banner (Triggered by /announce <message>) -->
+    <div id="announce-banner-wrap" class="announce-banner-wrap hidden">
+      <div class="announce-banner">
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;">
+          <span class="live-chip">
+            <span class="live-pulse"></span>
+            <span>BROADCAST</span>
+          </span>
+          <span id="announce-banner-text" style="font-size: 0.9rem; font-weight: 600; color: #ffffff; word-break: break-word;"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="announce-banner-time" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary);"></span>
+          <button id="btn-dismiss-announce" type="button" class="btn btn-sm" title="Dismiss banner">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible Top Admin Quick Drawer -->
+    <section id="admin-quick-drawer" class="admin-drawer-wrap hidden" aria-label="Admin Quick Console">
+      <div class="admin-drawer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: #fde68a;">
+            ⌘ LIVE ADMIN COMMAND TERMINAL
+          </span>
+          <button id="btn-close-quick-drawer" type="button" class="btn btn-sm">Hide Drawer</button>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input id="quick-cli-input" type="text" class="input" style="font-family: var(--font-mono);" placeholder="Enter /announce <msg>, /clearannounce, /theme <name>, /lock, /unlock, /stars <count>, /help..." />
+          <button id="btn-quick-cli-run" type="button" class="btn btn-gold">Execute</button>
+        </div>
+        <div id="quick-cli-log" class="terminal-box">
+          <div style="color: #38bdf8;">[SYS] Admin Console online. Type /help for all site-wide commands.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Stage -->
+    <main class="portal-container">
+      <!-- Glowing Cursive Header -->
+      <div class="hero-header">
+        <h1 class="darkness-title">Darkness</h1>
+        <p class="hero-tagline">Entertainment &bull; Game Sandbox &bull; Study Suite</p>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="main-nav-bar glass-panel" aria-label="Primary Portal Navigation">
+        <button type="button" class="nav-tab-btn is-active" data-nav-tab="entertainment">ENTERTAINMENT HUB</button>
+        <button type="button" class="nav-tab-btn" data-nav-tab="games">GAME SANDBOX</button>
+        <button type="button" class="nav-tab-btn" data-nav-tab="study">STUDY &amp; TOOLS</button>
+        <button type="button" class="nav-tab-btn" data-nav-tab="themes">THEMES &amp; ADMIN</button>
+      </nav>
+
+      <!-- ====================================================================
+           TAB 1: ENTERTAINMENT HUB (DUAL-COLUMN WATCHLIST)
+           ==================================================================== -->
+      <section id="tab-entertainment" class="tab-section" aria-label="Entertainment Hub">
+        <!-- Global Search & Status Filter Toolbar -->
+        <div class="ent-toolbar glass-panel">
+          <div class="ent-search-wrap">
+            <span style="color: var(--accent); font-size: 1.05rem;">⌕</span>
+            <input id="ent-search-input" type="text" class="input" placeholder="Search Anime, TV Shows, Movies, or Seasons..." />
+            <button id="btn-ent-search-clear" type="button" class="btn btn-sm hidden">Clear</button>
+          </div>
+
+          <div class="filter-pills" role="group" aria-label="Watchlist status filters">
+            <button type="button" class="filter-pill is-active" data-status-filter="All">All</button>
+            <button type="button" class="filter-pill" data-status-filter="Watching">Watching</button>
+            <button type="button" class="filter-pill" data-status-filter="Completed">Completed</button>
+            <button type="button" class="filter-pill" data-status-filter="Plan to Watch">Plan to Watch</button>
+          </div>
+        </div>
+
+        <!-- Dual Columns: Left = Anime | Right = Shows & Movies -->
+        <div class="ent-columns-grid">
+          <!-- LEFT COLUMN: ANIME -->
+          <div class="ent-column-card glass-panel">
+            <div class="ent-col-header">
+              <div>
+                <h2 style="font-size: 1.15rem; font-weight: 700;">⛩️ Anime</h2>
+                <div style="font-size: 0.77rem; color: var(--text-secondary);">Click title or Open Link to launch in a new tab</div>
+              </div>
+              <span id="anime-count-badge" class="count-badge">8 Items</span>
+            </div>
+
+            <!-- Inline + Add Anime Form -->
+            <form id="form-add-anime" class="add-ent-form">
+              <input id="add-anime-title" type="text" class="input" placeholder="Anime title..." required />
+              <input id="add-anime-tag" type="text" class="input" placeholder="Season / Tag..." />
+              <input id="add-anime-url" type="text" class="input" placeholder="External URL..." />
+              <select id="add-anime-status" class="input" style="padding: 8px 6px;">
+                <option value="Watching">Watching</option>
+                <option value="Completed">Completed</option>
+                <option value="Plan to Watch">Plan to Watch</option>
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+            </form>
+
+            <div id="anime-list-box" class="ent-scroll-list"></div>
+          </div>
+
+          <!-- RIGHT COLUMN: SHOWS & MOVIES -->
+          <div class="ent-column-card glass-panel">
+            <div class="ent-col-header">
+              <div>
+                <h2 style="font-size: 1.15rem; font-weight: 700;">🍿 Shows &amp; Movies</h2>
+                <div style="font-size: 0.77rem; color: var(--text-secondary);">Click title or Open Link to launch in a new tab</div>
+              </div>
+              <span id="media-count-badge" class="count-badge">15 Items</span>
+            </div>
+
+            <!-- Inline + Add Show/Movie Form -->
+            <form id="form-add-media" class="add-ent-form">
+              <input id="add-media-title" type="text" class="input" placeholder="Show or Movie title..." required />
+              <select id="add-media-type" class="input" style="padding: 8px 6px;">
+                <option value="TV Show">TV Show</option>
+                <option value="Movie">Movie</option>
+              </select>
+              <input id="add-media-url" type="text" class="input" placeholder="External URL..." />
+              <select id="add-media-status" class="input" style="padding: 8px 6px;">
+                <option value="Watching">Watching</option>
+                <option value="Completed">Completed</option>
+                <option value="Plan to Watch">Plan to Watch</option>
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+            </form>
+
+            <div id="media-list-box" class="ent-scroll-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 2: GAME SANDBOX / GAME CENTER
+           ==================================================================== -->
+      <section id="tab-games" class="tab-section hidden" aria-label="Game Sandbox">
+        <div class="game-sandbox-card glass-panel">
+          <div class="game-selector-bar">
+            <button type="button" class="btn btn-sm btn-primary" data-game-tab="dash">🟧 Geometry Dash (Darkness Dash)</button>
+            <button type="button" class="btn btn-sm" data-game-tab="snake">🐍 Neon Snake</button>
+            <button type="button" class="btn btn-sm" data-game-tab="shooter">🚀 Void Star Shooter</button>
+            <button type="button" class="btn btn-sm" data-game-tab="loader">📂 Drag &amp; Drop Game Loader</button>
+          </div>
+
+          <!-- 1. GEOMETRY DASH (DARKNESS DASH) -->
+          <div id="game-pane-dash" class="game-arena-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.8rem;">
+                <span>STAGE:
+                  <select id="dash-stage-select" class="input" style="display: inline-block; width: auto; padding: 4px 8px; font-size: 0.76rem;">
+                    <option value="0">1.0x Obsidian Run</option>
+                    <option value="1">1.2x Neon Pulse</option>
+                    <option value="2">1.4x Eclipse Overdrive</option>
+                  </select>
+                </span>
+                <span>ATTEMPT: <strong id="dash-attempt" style="color: var(--accent);">1</strong></span>
+                <span>PROGRESS: <strong id="dash-progress">0%</strong></span>
+                <span>BEST: <strong id="dash-best">0%</strong></span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-dash-restart" type="button" class="btn btn-sm btn-primary">↻ Restart</button>
+                <button type="button" class="btn btn-sm" data-fullscreen-box="game-pane-dash">⛶ Fullscreen</button>
+              </div>
+            </div>
+
+            <div class="viewport-frame" style="cursor: pointer;">
+              <canvas id="dash-canvas"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.81rem; color: var(--text-secondary);">
+              <span>Controls: <strong>Space</strong>, <strong>Up / W</strong>, or <strong>Click / Tap</strong> anywhere in the arena to jump!</span>
+              <button id="btn-dash-jump" type="button" class="btn btn-sm btn-primary">▲ JUMP</button>
+            </div>
+          </div>
+
+          <!-- 2. NEON SNAKE -->
+          <div id="game-pane-snake" class="game-arena-box hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 14px; font-family: var(--font-mono); font-size: 0.82rem;">
+                <span>SCORE: <strong id="snake-score" style="color: var(--accent);">0</strong></span>
+                <span>BEST: <strong id="snake-best">0</strong></span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-snake-restart" type="button" class="btn btn-sm btn-primary">↻ Restart</button>
+                <button type="button" class="btn btn-sm" data-fullscreen-box="game-pane-snake">⛶ Fullscreen</button>
+              </div>
+            </div>
+
+            <div class="viewport-frame">
+              <canvas id="snake-canvas"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 0.81rem; color: var(--text-secondary);">Use <strong>Arrow Keys</strong>, <strong>WASD</strong>, or touch buttons to steer.</span>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-sm" data-snake-dir="LEFT">◀</button>
+                <button type="button" class="btn btn-sm" data-snake-dir="UP">▲</button>
+                <button type="button" class="btn btn-sm" data-snake-dir="DOWN">▼</button>
+                <button type="button" class="btn btn-sm" data-snake-dir="RIGHT">▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. VOID STAR SHOOTER -->
+          <div id="game-pane-shooter" class="game-arena-box hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 14px; font-family: var(--font-mono); font-size: 0.82rem;">
+                <span>SCORE: <strong id="shooter-score" style="color: var(--accent);">0</strong></span>
+                <span>BEST: <strong id="shooter-best">0</strong></span>
+                <span>HULL: <strong id="shooter-hull" style="color: #6ee7b7;">100%</strong></span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-shooter-restart" type="button" class="btn btn-sm btn-primary">↻ Restart</button>
+                <button type="button" class="btn btn-sm" data-fullscreen-box="game-pane-shooter">⛶ Fullscreen</button>
+              </div>
+            </div>
+
+            <div class="viewport-frame" style="cursor: crosshair;">
+              <canvas id="shooter-canvas"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 0.81rem; color: var(--text-secondary);">Move with <strong>Left/Right (A/D)</strong> or drag pointer; <strong>Space</strong> or auto-laser fires!</span>
+              <div style="display: flex; gap: 6px;">
+                <button id="btn-shoot-left" type="button" class="btn btn-sm">◀ Left</button>
+                <button id="btn-shoot-fire" type="button" class="btn btn-sm btn-primary">⚡ Fire</button>
+                <button id="btn-shoot-right" type="button" class="btn btn-sm">Right ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. DRAG & DROP CUSTOM GAME LOADER -->
+          <div id="game-pane-loader" class="game-arena-box hidden">
+            <div id="custom-dropzone" class="dropzone-area" tabindex="0" role="button">
+              <div style="font-size: 1.85rem; margin-bottom: 4px;">📂</div>
+              <div style="font-weight: 700;">Drag &amp; Drop Custom Game Files Here (.html, .htm, .js)</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px;">
+                Or click to browse local game files. Standalone .js scripts are automatically wrapped in an HTML5 runner.
+              </div>
+              <input id="custom-file-input" type="file" accept=".html,.htm,.js" multiple class="hidden" />
+            </div>
+
+            <div id="custom-games-bar" class="hidden" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent);">LOADED:</span>
+              <div id="custom-games-list" style="display: flex; flex-wrap: wrap; gap: 7px;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-family: var(--font-mono); font-size: 0.8rem;">
+                ACTIVE RUNNER: <strong id="custom-runner-name" style="color: var(--accent);">No file loaded</strong>
+              </span>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-custom-reset" type="button" class="btn btn-sm">↻ Reset</button>
+                <button type="button" class="btn btn-sm" data-fullscreen-box="game-pane-loader">⛶ Fullscreen</button>
+              </div>
+            </div>
+
+            <div class="viewport-frame">
+              <iframe id="custom-game-iframe" title="Sandboxed Custom Game Runner" sandbox="allow-scripts allow-same-origin allow-pointer-lock"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 3: STUDY & TOOLS MODULE (SCIENTIFIC CALCULATOR + STUDY SUITE)
+           ==================================================================== -->
+      <section id="tab-study" class="tab-section hidden" aria-label="Study and Tools">
+        <div class="study-tools-grid">
+          <!-- LEFT: SCIENTIFIC CALCULATOR -->
+          <div class="calc-panel glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h2 style="font-size: 1.08rem; font-weight: 700;">🧮 Scientific Calculator</h2>
+              <span class="tag-chip">Radians</span>
+            </div>
+
+            <div class="calc-display">
+              <div id="calc-expr-line" style="font-size: 0.82rem; color: var(--text-secondary); min-height: 1.25em; word-break: break-all;"></div>
+              <div id="calc-result-line" style="font-size: 1.85rem; font-weight: 700; color: #ffffff; margin-top: 3px; word-break: break-all;">0</div>
+            </div>
+
+            <div class="calc-keypad">
+              <button type="button" class="calc-key clr" data-calc-key="C">C</button>
+              <button type="button" class="calc-key op" data-calc-key="DEL">⌫</button>
+              <button type="button" class="calc-key op" data-calc-key="(">(</button>
+              <button type="button" class="calc-key op" data-calc-key=")">)</button>
+              <button type="button" class="calc-key op" data-calc-key="/">÷</button>
+
+              <button type="button" class="calc-key op" data-calc-key="sin(">sin</button>
+              <button type="button" class="calc-key op" data-calc-key="cos(">cos</button>
+              <button type="button" class="calc-key op" data-calc-key="tan(">tan</button>
+              <button type="button" class="calc-key op" data-calc-key="sqrt(">√</button>
+              <button type="button" class="calc-key op" data-calc-key="^">^</button>
+
+              <button type="button" class="calc-key op" data-calc-key="log(">log</button>
+              <button type="button" class="calc-key" data-calc-key="7">7</button>
+              <button type="button" class="calc-key" data-calc-key="8">8</button>
+              <button type="button" class="calc-key" data-calc-key="9">9</button>
+              <button type="button" class="calc-key op" data-calc-key="*">×</button>
+
+              <button type="button" class="calc-key op" data-calc-key="ln(">ln</button>
+              <button type="button" class="calc-key" data-calc-key="4">4</button>
+              <button type="button" class="calc-key" data-calc-key="5">5</button>
+              <button type="button" class="calc-key" data-calc-key="6">6</button>
+              <button type="button" class="calc-key op" data-calc-key="-">−</button>
+
+              <button type="button" class="calc-key op" data-calc-key="pi">π</button>
+              <button type="button" class="calc-key" data-calc-key="1">1</button>
+              <button type="button" class="calc-key" data-calc-key="2">2</button>
+              <button type="button" class="calc-key" data-calc-key="3">3</button>
+              <button type="button" class="calc-key op" data-calc-key="+">+</button>
+
+              <button type="button" class="calc-key op" data-calc-key="e">e</button>
+              <button type="button" class="calc-key" data-calc-key="0">0</button>
+              <button type="button" class="calc-key" data-calc-key=".">.</button>
+              <button type="button" class="calc-key eq" style="grid-column: span 2;" data-calc-key="=">=</button>
+            </div>
+
+            <div style="margin-top: 12px;">
+              <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 5px;">
+                CALCULATION HISTORY (CLICK TO REUSE)
+              </div>
+              <div id="calc-history-list" style="display: flex; flex-direction: column; gap: 5px; max-height: 110px; overflow-y: auto;"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: STUDY HELP SUITE -->
+          <div class="study-suite-panel glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <h2 style="font-size: 1.08rem; font-weight: 700;">📚 Study Help Suite</h2>
+              <div style="display: flex; gap: 7px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm btn-primary" data-study-pane="flashcards">🗂️ 3D Flashcards</button>
+                <button type="button" class="btn btn-sm" data-study-pane="pomodoro">⏱️ Pomodoro Timer</button>
+                <button type="button" class="btn btn-sm" data-study-pane="notes">📝 Study Notes</button>
+              </div>
+            </div>
+
+            <!-- Pane 1: 3D Flip Flashcards -->
+            <div id="study-pane-flashcards" style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="fc-deck-count" class="tag-chip">Card 1 of 6</span>
+                <span style="font-size: 0.76rem; color: var(--text-secondary);">Click card to flip 3D</span>
+              </div>
+
+              <div id="fc-stage" class="flashcard-stage">
+                <div id="fc-flipper" class="flashcard-flipper">
+                  <div class="flashcard-face">
+                    <span id="fc-front-tag" class="tag-chip" style="margin-bottom: 10px;">Math</span>
+                    <div id="fc-front-q" style="font-size: 1.08rem; font-weight: 700;">Question</div>
+                  </div>
+                  <div class="flashcard-face flashcard-back">
+                    <span class="tag-chip" style="margin-bottom: 10px;">Answer</span>
+                    <div id="fc-back-a" style="font-size: 1rem; font-weight: 600;">Answer</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between;">
+                <div style="display: flex; gap: 8px;">
+                  <button id="btn-fc-prev" type="button" class="btn btn-sm">← Prev</button>
+                  <button id="btn-fc-flip" type="button" class="btn btn-sm btn-primary">Flip</button>
+                  <button id="btn-fc-next" type="button" class="btn btn-sm">Next →</button>
+                </div>
+                <button id="btn-fc-delete" type="button" class="btn btn-sm btn-danger">Delete Card</button>
+              </div>
+
+              <form id="form-add-flashcard" style="display: grid; grid-template-columns: 110px 1fr 1fr auto; gap: 7px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+                <input id="fc-new-topic" type="text" class="input" placeholder="Topic..." value="Study" />
+                <input id="fc-new-q" type="text" class="input" placeholder="Question / Term..." required />
+                <input id="fc-new-a" type="text" class="input" placeholder="Answer / Definition..." required />
+                <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+              </form>
+            </div>
+
+            <!-- Pane 2: Pomodoro Focus Timer -->
+            <div id="study-pane-pomodoro" class="hidden" style="text-align: center; padding: 20px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(var(--accent-rgb), 0.25);">
+              <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <button type="button" class="btn btn-sm btn-primary" data-pomo-mins="25">Focus (25m)</button>
+                <button type="button" class="btn btn-sm" data-pomo-mins="5">Short Break (5m)</button>
+                <button type="button" class="btn btn-sm" data-pomo-mins="15">Long Break (15m)</button>
+              </div>
+              <div id="pomo-timer-display" style="font-family: var(--font-mono); font-size: 3.4rem; font-weight: 700; color: #ffffff; text-shadow: 0 0 24px rgba(var(--accent-rgb), 0.45); margin: 10px 0;">
+                25:00
+              </div>
+              <div style="display: flex; justify-content: center; gap: 10px;">
+                <button id="btn-pomo-start" type="button" class="btn btn-primary">▶ Start</button>
+                <button id="btn-pomo-pause" type="button" class="btn">⏸ Pause</button>
+                <button id="btn-pomo-reset" type="button" class="btn">↻ Reset</button>
+              </div>
+            </div>
+
+            <!-- Pane 3: Auto-Saved Study Notes Scratchpad -->
+            <div id="study-pane-notes" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="notes-stats" style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent);">AUTO-SAVED TO LOCALSTORAGE &bull; 0 WORDS</span>
+                <button id="btn-notes-clear" type="button" class="btn btn-sm btn-danger">Clear Scratchpad</button>
+              </div>
+              <textarea id="study-notes-box" class="input" rows="9" placeholder="Type study notes, formulas, homework tasks, or outlines here — saved automatically..." style="resize: vertical;"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 4: THEMES & ADMIN COMMAND CONSOLE
+           ==================================================================== -->
+      <section id="tab-themes" class="tab-section hidden" aria-label="Themes and Admin Console">
+        <div class="themes-admin-grid">
+          <!-- LEFT: THEME & STARFIELD CUSTOMIZER -->
+          <div class="glass-panel" style="border-radius: var(--radius-lg); padding: 20px;">
+            <h2 style="font-size: 1.08rem; font-weight: 700; margin-bottom: 4px;">✨ Obsidian Themes &amp; Starfield</h2>
+            <p style="font-size: 0.79rem; color: var(--text-secondary); margin-bottom: 14px;">
+              Customize portal accent glow and animated starfield density.
+            </p>
+
+            <div class="theme-swatch-grid">
+              <button type="button" class="theme-card-btn is-active" data-theme-select="obsidian">
+                <div style="font-weight: 700; font-size: 0.85rem;">⚪ Obsidian</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Pure Silver &amp; Cyan</div>
+              </button>
+              <button type="button" class="theme-card-btn" data-theme-select="crimson">
+                <div style="font-weight: 700; font-size: 0.85rem;">🔴 Crimson</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Blood Eclipse</div>
+              </button>
+              <button type="button" class="theme-card-btn" data-theme-select="cyber">
+                <div style="font-weight: 700; font-size: 0.85rem;">🔵 Cyber</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Electric Neon</div>
+              </button>
+              <button type="button" class="theme-card-btn" data-theme-select="emerald">
+                <div style="font-weight: 700; font-size: 0.85rem;">🟢 Emerald</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Matrix Nebula</div>
+              </button>
+              <button type="button" class="theme-card-btn" data-theme-select="amethyst">
+                <div style="font-weight: 700; font-size: 0.85rem;">🟣 Amethyst</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Void Violet</div>
+              </button>
+              <button type="button" class="theme-card-btn" data-theme-select="solar">
+                <div style="font-weight: 700; font-size: 0.85rem;">🟡 Solar</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Amber Flare</div>
+              </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.78rem; margin-bottom: 5px;">
+                  <span>Starfield Particle Count</span>
+                  <span id="lbl-stars-count">180</span>
+                </div>
+                <input id="slider-stars-count" type="range" min="0" max="400" value="180" style="width: 100%; accent-color: var(--accent);" />
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.78rem; margin-bottom: 5px;">
+                  <span>Star Drift Speed</span>
+                  <span id="lbl-stars-speed">1.0x</span>
+                </div>
+                <input id="slider-stars-speed" type="range" min="0" max="35" value="10" style="width: 100%; accent-color: var(--accent);" />
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="picker-star-tint" style="font-family: var(--font-mono); font-size: 0.78rem;">Star Particle Tint</label>
+                <input id="picker-star-tint" type="color" value="#ffffff" style="width: 44px; height: 32px; border: none; background: transparent; cursor: pointer;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: ADMIN CONTROLS & COMMAND TERMINAL -->
+          <div class="glass-panel" style="border-radius: var(--radius-lg); padding: 20px; border-color: rgba(251, 191, 36, 0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+              <h2 style="font-size: 1.08rem; font-weight: 700; color: #fde68a;">⌘ Admin Console &amp; Site Controls</h2>
+              <span id="admin-tab-status-chip" class="role-badge">GUEST VIEW</span>
+            </div>
+
+            <!-- Locked Notice for Guest Users -->
+            <div id="admin-tab-guest-notice" style="padding: 16px; border-radius: 14px; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.35); margin-bottom: 12px;">
+              <div style="font-weight: 700; font-size: 0.9rem; color: #fde68a; margin-bottom: 4px;">Admin Clearance Required</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+                You are currently signed in as Guest. Authenticate with the Admin password to broadcast announcements, lock Guest access, or run CLI commands.
+              </div>
+              <button id="btn-tab-unlock-admin" type="button" class="btn btn-sm btn-gold">Authenticate as Admin →</button>
+            </div>
+
+            <!-- Full Admin Controls (Visible when Admin is logged in) -->
+            <div id="admin-tab-controls" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- One-Click Announcement Bar -->
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input id="admin-ui-announce-input" type="text" class="input" placeholder="Type live announcement banner..." style="flex: 1; min-width: 190px;" />
+                <button id="btn-admin-ui-announce" type="button" class="btn btn-gold btn-sm">Broadcast</button>
+                <button id="btn-admin-ui-clear-announce" type="button" class="btn btn-danger btn-sm">Clear Banner</button>
+              </div>
+
+              <!-- One-Click Lockdown & Preset Chips -->
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="btn-admin-ui-lock" type="button" class="btn btn-sm btn-gold">🔒 Lock Guest Access</button>
+                <button id="btn-admin-ui-unlock" type="button" class="btn btn-sm">🔓 Unlock Guest Access</button>
+                <button type="button" class="btn btn-sm" data-cli-preset="/help">/help</button>
+                <button type="button" class="btn btn-sm" data-cli-preset="/stars 280">/stars 280</button>
+              </div>
+
+              <!-- Terminal CLI -->
+              <div style="display: flex; gap: 8px;">
+                <input id="main-cli-input" type="text" class="input" style="font-family: var(--font-mono);" placeholder="/announce <msg> | /theme <name> | /lock | /unlock | /stars <count> | /help" />
+                <button id="btn-main-cli-run" type="button" class="btn btn-primary btn-sm">Run</button>
+              </div>
+
+              <div id="main-cli-log" class="terminal-box">
+                <div style="color: #38bdf8;">[SYS] Ready. Type /help to list all supported commands.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       4. COMPLETE APPLICATION ENGINE
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         1. STORAGE KEYS & HELPERS
+         ---------------------------------------------------------------------- */
+      const STORAGE_KEYS = {
+        ENTERTAINMENT: 'darkness_entertainment_v2',
+        SITE_STATE: 'darkness_site_state_v3',
+        PREFS: 'darkness_prefs_v3',
+        FLASHCARDS: 'darkness_flashcards_v3',
+        NOTES: 'darkness_notes_v3',
+        SCORES: 'darkness_scores_v3',
+        SESSION_ROLE: 'darkness_session_role_v3'
+      };
+
+      function readJSON(key, fallback) {
+        try {
+          const raw = window.localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function writeJSON(key, value) {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(value));
+        } catch (err) {
+          /* Safe fallback if storage quota or iframe sandbox restricts writes */
+        }
+      }
+
+      function escapeHTML(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function normalizeUrl(raw) {
+        const trimmed = String(raw || '').trim();
+        if (!trimmed) return '';
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        return 'https://' + trimmed;
+      }
+
+      function normalizeKey(str) {
+        return String(str || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      }
+
+      function showToast(message) {
+        const stack = document.getElementById('toast-stack');
+        if (!stack) return;
+        const item = document.createElement('div');
+        item.className = 'toast-item';
+        item.textContent = message;
+        stack.appendChild(item);
+        setTimeout(() => {
+          item.style.opacity = '0';
+          item.style.transition = 'opacity 0.25s ease';
+          setTimeout(() => {
+            if (item.parentNode) item.parentNode.removeChild(item);
+          }, 260);
+        }, 3000);
+      }
+
+      let syncChannel = null;
+      try {
+        if ('BroadcastChannel' in window) {
+          syncChannel = new BroadcastChannel('darkness_portal_sync');
+        }
+      } catch (err) {
+        syncChannel = null;
+      }
+
+      /* ----------------------------------------------------------------------
+         2. THEMES & 60FPS ANIMATED STARFIELD ENGINE
+         ---------------------------------------------------------------------- */
+      const THEMES = {
+        obsidian: { label: 'Obsidian', accent: '#e2e8f0', rgb: '226, 232, 240', accent2: '#38bdf8', rgb2: '56, 189, 248' },
+        crimson:  { label: 'Crimson',  accent: '#fb7185', rgb: '251, 113, 133', accent2: '#f43f5e', rgb2: '244, 63, 94' },
+        cyber:    { label: 'Cyber',    accent: '#22d3ee', rgb: '34, 211, 238',  accent2: '#06b6d4', rgb2: '6, 182, 212' },
+        emerald:  { label: 'Emerald',  accent: '#34d399', rgb: '52, 211, 153',  accent2: '#10b981', rgb2: '16, 185, 129' },
+        amethyst: { label: 'Amethyst', accent: '#c084fc', rgb: '192, 132, 252', accent2: '#a855f7', rgb2: '168, 85, 247' },
+        solar:    { label: 'Solar',    accent: '#fbbf24', rgb: '251, 191, 36',  accent2: '#f59e0b', rgb2: '245, 158, 11' }
+      };
+
+      const prefs = Object.assign(
+        { theme: 'obsidian', starCount: 180, starSpeed: 1.0, starTint: '#ffffff' },
+        readJSON(STORAGE_KEYS.PREFS, {})
+      );
+      if (!THEMES[prefs.theme]) prefs.theme = 'obsidian';
+
+      function applyThemeAndPrefs() {
+        const themeObj = THEMES[prefs.theme] || THEMES.obsidian;
+        const root = document.documentElement;
+        root.style.setProperty('--accent', themeObj.accent);
+        root.style.setProperty('--accent-rgb', themeObj.rgb);
+        root.style.setProperty('--accent-2', themeObj.accent2);
+        root.style.setProperty('--accent-2-rgb', themeObj.rgb2);
+
+        prefs.starCount = Math.max(0, Math.min(400, Math.round(Number(prefs.starCount) || 0)));
+        prefs.starSpeed = Math.max(0, Math.min(3.5, Number(prefs.starSpeed) || 0));
+
+        document.querySelectorAll('[data-theme-select]').forEach((btn) => {
+          btn.classList.toggle('is-active', btn.dataset.themeSelect === prefs.theme);
+        });
+
+        const countSlider = document.getElementById('slider-stars-count');
+        const speedSlider = document.getElementById('slider-stars-speed');
+        const tintPicker = document.getElementById('picker-star-tint');
+        if (countSlider) countSlider.value = String(prefs.starCount);
+        if (speedSlider) speedSlider.value = String(Math.round(prefs.starSpeed * 10));
+        if (tintPicker) tintPicker.value = prefs.starTint || '#ffffff';
+
+        const lblCount = document.getElementById('lbl-stars-count');
+        const lblSpeed = document.getElementById('lbl-stars-speed');
+        if (lblCount) lblCount.textContent = String(prefs.starCount);
+        if (lblSpeed) lblSpeed.textContent = prefs.starSpeed.toFixed(1) + 'x';
+
+        syncStarfieldPool();
+        writeJSON(STORAGE_KEYS.PREFS, prefs);
+      }
+
+      const starCanvas = document.getElementById('starfield-canvas');
+      const starCtx = starCanvas ? starCanvas.getContext('2d') : null;
+      let stars = [];
+      let parallax = { x: 0, y: 0, tx: 0, ty: 0 };
+
+      function resizeStarCanvas() {
+        if (!starCanvas) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        starCanvas.width = Math.floor(window.innerWidth * dpr);
+        starCanvas.height = Math.floor(window.innerHeight * dpr);
+        if (starCtx) starCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function syncStarfieldPool() {
+        const w = window.innerWidth || 1280;
+        const h = window.innerHeight || 800;
+        const target = prefs.starCount;
+        while (stars.length < target) {
+          stars.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            z: 0.25 + Math.random() * 0.95,
+            r: 0.55 + Math.random() * 1.65,
+            phase: Math.random() * Math.PI * 2,
+            twinkle: 0.015 + Math.random() * 0.03
+          });
+        }
+        if (stars.length > target) stars.length = target;
+      }
+
+      window.addEventListener('mousemove', (e) => {
+        parallax.tx = ((e.clientX / Math.max(1, window.innerWidth)) - 0.5) * 28;
+        parallax.ty = ((e.clientY / Math.max(1, window.innerHeight)) - 0.5) * 28;
+      });
+
+      function animateStarfield() {
+        if (starCtx && starCanvas) {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          starCtx.fillStyle = '#000000';
+          starCtx.fillRect(0, 0, w, h);
+
+          parallax.x += (parallax.tx - parallax.x) * 0.05;
+          parallax.y += (parallax.ty - parallax.y) * 0.05;
+
+          const speed = prefs.starSpeed;
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i];
+            s.y -= 0.25 * s.z * speed;
+            if (s.y < -6) {
+              s.y = h + 6;
+              s.x = Math.random() * w;
+            }
+            s.phase += s.twinkle;
+            const alpha = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(s.phase));
+            const dx = (s.x + parallax.x * s.z + w) % w;
+            const dy = (s.y + parallax.y * s.z + h) % h;
+
+            starCtx.globalAlpha = alpha;
+            starCtx.fillStyle = prefs.starTint || '#ffffff';
+            starCtx.beginPath();
+            starCtx.arc(dx, dy, s.r * (0.7 + s.z * 0.35), 0, Math.PI * 2);
+            starCtx.fill();
+          }
+          starCtx.globalAlpha = 1;
+        }
+        window.requestAnimationFrame(animateStarfield);
+      }
+
+      /* ----------------------------------------------------------------------
+         3. ACCESS CONTROL (GUEST / ADMIN GATE + SITE-WIDE COMMAND SYSTEM)
+         ---------------------------------------------------------------------- */
+      let currentRole = null; // 'guest' | 'admin'
+      let dismissedAnnounceId = null;
+
+      let siteState = readJSON(STORAGE_KEYS.SITE_STATE, {
+        announcement: null, // { id, message, time }
+        locked: false
+      });
+
+      const entryGate = document.getElementById('entry-gate');
+      const gateCard = document.getElementById('gate-card');
+      const gateAdminPass = document.getElementById('gate-admin-pass');
+      const gateAdminError = document.getElementById('gate-admin-error');
+      const chkRememberSession = document.getElementById('chk-remember-session');
+      const guestLockOverlay = document.getElementById('guest-lock-overlay');
+
+      function setSessionRole(role) {
+        currentRole = role;
+        const isAdmin = role === 'admin';
+
+        if (chkRememberSession && chkRememberSession.checked) {
+          writeJSON(STORAGE_KEYS.SESSION_ROLE, role);
+        } else {
+          try { window.localStorage.removeItem(STORAGE_KEYS.SESSION_ROLE); } catch (err) {}
+        }
+
+        if (entryGate) entryGate.classList.add('hidden');
+        if (gateAdminPass) gateAdminPass.value = '';
+        if (gateAdminError) gateAdminError.textContent = '';
+
+        // Top Bar Role UI
+        const badge = document.getElementById('topbar-role-badge');
+        const label = document.getElementById('topbar-role-label');
+        const btnTopDrawer = document.getElementById('btn-top-admin-drawer');
+        if (badge) badge.classList.toggle('is-admin', isAdmin);
+        if (label) label.textContent = isAdmin ? 'ADMIN' : 'GUEST';
+        if (btnTopDrawer) btnTopDrawer.classList.toggle('hidden', !isAdmin);
+
+        // Themes & Admin Tab UI
+        const statusChip = document.getElementById('admin-tab-status-chip');
+        const guestNotice = document.getElementById('admin-tab-guest-notice');
+        const adminControls = document.getElementById('admin-tab-controls');
+        if (statusChip) {
+          statusChip.classList.toggle('is-admin', isAdmin);
+          statusChip.textContent = isAdmin ? 'ADMIN CLEARANCE' : 'GUEST VIEW';
+        }
+        if (guestNotice) guestNotice.classList.toggle('hidden', isAdmin);
+        if (adminControls) adminControls.classList.toggle('hidden', !isAdmin);
+
+        if (!isAdmin) {
+          document.getElementById('admin-quick-drawer').classList.add('hidden');
+        }
+
+        renderSiteState();
+        showToast(isAdmin ? 'Admin access granted.' : 'Entered Darkness as Guest.');
+      }
+
+      document.getElementById('btn-enter-guest').addEventListener('click', () => {
+        setSessionRole('guest');
+      });
+
+      function attemptAdminUnlock() {
+        const pw = (gateAdminPass ? gateAdminPass.value : '').trim().toLowerCase();
+        if (pw === 'ashton') {
+          setSessionRole('admin');
+        } else {
+          if (gateAdminError) gateAdminError.textContent = 'Invalid admin password.';
+          if (gateCard) {
+            gateCard.classList.remove('shake');
+            void gateCard.offsetWidth;
+            gateCard.classList.add('shake');
+          }
+          if (gateAdminPass) gateAdminPass.select();
+        }
+      }
+
+      document.getElementById('btn-enter-admin').addEventListener('click', attemptAdminUnlock);
+      if (gateAdminPass) {
+        gateAdminPass.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            attemptAdminUnlock();
+          }
+        });
+      }
+
+      function openEntryGate() {
+        try { window.localStorage.removeItem(STORAGE_KEYS.SESSION_ROLE); } catch (err) {}
+        if (guestLockOverlay) guestLockOverlay.classList.add('hidden');
+        if (entryGate) entryGate.classList.remove('hidden');
+        if (gateAdminError) gateAdminError.textContent = '';
+      }
+
+      document.getElementById('btn-switch-role').addEventListener('click', openEntryGate);
+      document.getElementById('btn-lock-switch-admin').addEventListener('click', () => {
+        openEntryGate();
+        if (gateAdminPass) gateAdminPass.focus();
+      });
+      document.getElementById('btn-tab-unlock-admin').addEventListener('click', () => {
+        openEntryGate();
+        if (gateAdminPass) gateAdminPass.focus();
+      });
+
+      document.getElementById('btn-top-admin-drawer').addEventListener('click', () => {
+        document.getElementById('admin-quick-drawer').classList.toggle('hidden');
+      });
+      document.getElementById('btn-close-quick-drawer').addEventListener('click', () => {
+        document.getElementById('admin-quick-drawer').classList.add('hidden');
+      });
+
+      function broadcastSiteState() {
+        writeJSON(STORAGE_KEYS.SITE_STATE, siteState);
+        if (syncChannel) {
+          try {
+            syncChannel.postMessage({ type: 'SITE_STATE', state: siteState });
+          } catch (err) {}
+        }
+        renderSiteState();
+      }
+
+      function renderSiteState() {
+        // 1. Guest Lockdown Check
+        const isGuestLocked = Boolean(siteState.locked && currentRole === 'guest');
+        if (guestLockOverlay) {
+          guestLockOverlay.classList.toggle('hidden', !isGuestLocked);
+        }
+
+        // 2. Live Broadcast Banner Check
+        const bannerWrap = document.getElementById('announce-banner-wrap');
+        const bannerText = document.getElementById('announce-banner-text');
+        const bannerTime = document.getElementById('announce-banner-time');
+        const ann = siteState.announcement;
+
+        if (ann && ann.message && ann.id !== dismissedAnnounceId) {
+          if (bannerText) bannerText.textContent = ann.message;
+          if (bannerTime) {
+            bannerTime.textContent = new Date(ann.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+          if (bannerWrap) bannerWrap.classList.remove('hidden');
+        } else {
+          if (bannerWrap) bannerWrap.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('btn-dismiss-announce').addEventListener('click', () => {
+        if (siteState.announcement) {
+          dismissedAnnounceId = siteState.announcement.id;
+        }
+        document.getElementById('announce-banner-wrap').classList.add('hidden');
+      });
+
+      if (syncChannel) {
+        syncChannel.onmessage = (e) => {
+          if (!e || !e.data) return;
+          if (e.data.type === 'SITE_STATE') {
+            siteState = e.data.state;
+            renderSiteState();
+          } else if (e.data.type === 'PREFS') {
+            Object.assign(prefs, e.data.prefs);
+            applyThemeAndPrefs();
+          }
+        };
+      }
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEYS.SITE_STATE) {
+          siteState = readJSON(STORAGE_KEYS.SITE_STATE, siteState);
+          renderSiteState();
+        } else if (e.key === STORAGE_KEYS.PREFS) {
+          Object.assign(prefs, readJSON(STORAGE_KEYS.PREFS, {}));
+          applyThemeAndPrefs();
+        } else if (e.key === STORAGE_KEYS.ENTERTAINMENT) {
+          entertainmentData = loadEntertainmentData();
+          renderEntertainmentColumns();
+        }
+      });
+
+      function appendCliLog(text, color) {
+        ['quick-cli-log', 'main-cli-log'].forEach((id) => {
+          const box = document.getElementById(id);
+          if (!box) return;
+          const line = document.createElement('div');
+          line.style.color = color || '#e2e8f0';
+          line.textContent = text;
+          box.appendChild(line);
+          box.scrollTop = box.scrollHeight;
+        });
+      }
+
+      function executeAdminCommand(rawInput) {
+        if (currentRole !== 'admin') {
+          showToast('Admin clearance required.');
+          return;
+        }
+        const trimmed = String(rawInput || '').trim();
+        if (!trimmed) return;
+        appendCliLog('> ' + trimmed, '#fde68a');
+
+        const parts = trimmed.split(/\s+/);
+        const cmd = parts[0].toLowerCase();
+        const arg = trimmed.slice(parts[0].length).trim();
+
+        if (cmd === '/announce') {
+          if (!arg) {
+            appendCliLog('[ERR] Usage: /announce <message>', '#fb7185');
+            return;
+          }
+          dismissedAnnounceId = null;
+          siteState.announcement = { id: 'ann_' + Date.now(), message: arg, time: Date.now() };
+          broadcastSiteState();
+          appendCliLog('[OK] Broadcast live: "' + arg + '"', '#6ee7b7');
+          showToast('Announcement broadcasted live!');
+        } else if (cmd === '/clearannounce') {
+          siteState.announcement = null;
+          dismissedAnnounceId = null;
+          broadcastSiteState();
+          appendCliLog('[OK] Active broadcast banner cleared.', '#38bdf8');
+          showToast('Broadcast banner cleared.');
+        } else if (cmd === '/theme') {
+          const tKey = arg.toLowerCase();
+          if (!THEMES[tKey]) {
+            appendCliLog('[ERR] Valid themes: obsidian, crimson, cyber, emerald, amethyst, solar', '#fb7185');
+            return;
+          }
+          prefs.theme = tKey;
+          applyThemeAndPrefs();
+          if (syncChannel) {
+            try { syncChannel.postMessage({ type: 'PREFS', prefs }); } catch (err) {}
+          }
+          appendCliLog('[OK] Switched theme to ' + THEMES[tKey].label + '.', '#38bdf8');
+          showToast('Theme: ' + THEMES[tKey].label);
+        } else if (cmd === '/lock') {
+          siteState.locked = true;
+          broadcastSiteState();
+          appendCliLog('[OK] Site-wide Guest Lockdown enabled.', '#fbbf24');
+          showToast('Guest access locked.');
+        } else if (cmd === '/unlock') {
+          siteState.locked = false;
+          broadcastSiteState();
+          appendCliLog('[OK] Site-wide Guest Lockdown lifted.', '#6ee7b7');
+          showToast('Guest access unlocked.');
+        } else if (cmd === '/stars') {
+          const count = Number(arg);
+          if (arg === '' || Number.isNaN(count) || count < 0 || count > 400) {
+            appendCliLog('[ERR] Usage: /stars <0-400>', '#fb7185');
+            return;
+          }
+          prefs.starCount = Math.round(count);
+          prefs.starSpeed = count === 0 ? 0 : Math.max(0.8, Math.min(2.8, count / 160));
+          applyThemeAndPrefs();
+          if (syncChannel) {
+            try { syncChannel.postMessage({ type: 'PREFS', prefs }); } catch (err) {}
+          }
+          appendCliLog('[OK] Starfield density set to ' + prefs.starCount + ' particles.', '#38bdf8');
+        } else if (cmd === '/help') {
+          appendCliLog('Available Commands:', '#38bdf8');
+          appendCliLog('  /announce <message>  - Display live broadcast banner for all users', '#cbd5e1');
+          appendCliLog('  /clearannounce       - Dismiss/clear active broadcast banner', '#cbd5e1');
+          appendCliLog('  /theme <name>        - obsidian | crimson | cyber | emerald | amethyst | solar', '#cbd5e1');
+          appendCliLog('  /lock | /unlock      - Toggle Guest Lockdown overlay', '#cbd5e1');
+          appendCliLog('  /stars <0-400>       - Adjust starfield density and drift speed', '#cbd5e1');
+        } else {
+          appendCliLog('[ERR] Unknown command "' + cmd + '". Type /help for valid commands.', '#fb7185');
+        }
+      }
+
+      // Wire CLI inputs & Admin UI controls
+      document.getElementById('btn-quick-cli-run').addEventListener('click', () => {
+        const inp = document.getElementById('quick-cli-input');
+        executeAdminCommand(inp.value);
+        inp.value = '';
+      });
+      document.getElementById('quick-cli-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const inp = document.getElementById('quick-cli-input');
+          executeAdminCommand(inp.value);
+          inp.value = '';
+        }
+      });
+
+      document.getElementById('btn-main-cli-run').addEventListener('click', () => {
+        const inp = document.getElementById('main-cli-input');
+        executeAdminCommand(inp.value);
+        inp.value = '';
+      });
+      document.getElementById('main-cli-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const inp = document.getElementById('main-cli-input');
+          executeAdminCommand(inp.value);
+          inp.value = '';
+        }
+      });
+
+      document.getElementById('btn-admin-ui-announce').addEventListener('click', () => {
+        const inp = document.getElementById('admin-ui-announce-input');
+        if (inp.value.trim()) {
+          executeAdminCommand('/announce ' + inp.value.trim());
+          inp.value = '';
+        }
+      });
+      document.getElementById('btn-admin-ui-clear-announce').addEventListener('click', () => {
+        executeAdminCommand('/clearannounce');
+      });
+      document.getElementById('btn-admin-ui-lock').addEventListener('click', () => {
+        executeAdminCommand('/lock');
+      });
+      document.getElementById('btn-admin-ui-unlock').addEventListener('click', () => {
+        executeAdminCommand('/unlock');
+      });
+      document.querySelectorAll('[data-cli-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => executeAdminCommand(btn.dataset.cliPreset));
+      });
+
+      /* ----------------------------------------------------------------------
+         4. NAVIGATION TABS (ENTERTAINMENT HUB | GAME SANDBOX | STUDY & TOOLS | THEMES & ADMIN)
+         ---------------------------------------------------------------------- */
+      let activeNavTab = 'entertainment';
+
+      function switchNavTab(tabName) {
+        activeNavTab = tabName;
+        document.querySelectorAll('[data-nav-tab]').forEach((btn) => {
+          btn.classList.toggle('is-active', btn.dataset.navTab === tabName);
+        });
+        ['entertainment', 'games', 'study', 'themes'].forEach((sec) => {
+          const el = document.getElementById('tab-' + sec);
+          if (el) el.classList.toggle('hidden', sec !== tabName);
+        });
+
+        if (tabName === 'games') {
+          activateGamePane(activeGamePane);
+        } else {
+          stopAllGameLoops();
+        }
+      }
+
+      document.querySelectorAll('[data-nav-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => switchNavTab(btn.dataset.navTab));
+      });
+      document.getElementById('btn-brand-home').addEventListener('click', () => {
+        exitGameFullscreen();
+        switchNavTab('entertainment');
+      });
+
+      /* ----------------------------------------------------------------------
+         5. ENTERTAINMENT HUB (DUAL-COLUMN WATCHLIST WITH AUTO-MERGE)
+         ---------------------------------------------------------------------- */
+      const DEFAULT_ENTERTAINMENT = {
+        anime: [
+          {
+            id: 'dn_full_anime',
+            title: 'Death Note - Full Anime',
+            tag: 'Anime • Full Series',
+            url: 'https://docs.google.com/document/d/1vlCopkl4B0IUxblkEAWWX1SzL7qVK-I9EeYxOJQtrrA/edit?tab=t.0',
+            status: 'Watching'
+          },
+          {
+            id: 'bluelock_s1',
+            title: 'Blue Lock - Season 1',
+            tag: 'Anime • Season 1',
+            url: 'https://drive.google.com/drive/folders/1L_4PmRvkuqYsvLQSzMuaqRVDQg2pb9Z6',
+            status: 'Watching'
+          },
+          {
+            id: 'bluelock_s2',
+            title: 'Blue Lock - Season 2',
+            tag: 'Anime • Season 2',
+            url: 'https://drive.google.com/drive/folders/1tiOqaE_U0hF_YyK2BQR3CoY0vuY4EdGK',
+            status: 'Watching'
+          },
+          {
+            id: 'jjk_s1',
+            title: 'Jujutsu Kaisen (JJK) - Season 1',
+            tag: 'Anime • Season 1',
+            url: 'https://drive.google.com/drive/folders/1lmIscx6XBfjjD5INeEg3Vq7oLoQc5tYN',
+            status: 'Watching'
+          },
+          {
+            id: 'jjk_s2',
+            title: 'Jujutsu Kaisen (JJK) - Season 2',
+            tag: 'Anime • Season 2',
+            url: 'https://drive.google.com/drive/u/0/folders/1M-74s0lM8qP3o8cwcjqe2kbvSv4okdJa',
+            status: 'Watching'
+          },
+          {
+            id: 'jjk_s3',
+            title: 'Jujutsu Kaisen (JJK) - Season 3',
+            tag: 'Anime • Season 3',
+            url: 'https://drive.google.com/drive/folders/1pxr9D78pHyJ0UJBjLGcBAQ03mk3mdooc',
+            status: 'Watching'
+          },
+          {
+            id: 'onepiece_full',
+            title: 'One Piece - Full Anime',
+            tag: 'Anime • Full Series',
+            url: 'https://drive.google.com/drive/folders/1VdoAVMV9ojCefzkVMsXB3ms5TCEcgxoC',
+            status: 'Watching'
+          },
+          {
+            id: 'opm_s1',
+            title: 'One Punch Man - Season 1',
+            tag: 'Anime • Season 1',
+            url: 'https://drive.google.com/drive/folders/1yGjMeMX0_1vUHa6XbpszYGe5yLqYLKRc',
+            status: 'Watching'
+          }
+        ],
+        media: [
+          {
+            id: 'rick_morty_all_seasons',
+            title: 'Rick and Morty - All Seasons',
+            type: 'TV Show',
+            tag: 'TV Show • All Seasons',
+            url: 'https://drive.google.com/drive/folders/1EhzdG061fossyvUWpAWzDB_b6WhAWvbS?dmr=1&ec=wgc-drive-hero-goto',
+            status: 'Watching'
+          },
+          {
+            id: 'beast_games_s1',
+            title: 'Beast Games S1 - All Episodes',
+            type: 'TV Show',
+            tag: 'TV Show • Season 1',
+            url: 'https://drive.google.com/drive/folders/1Q8_n0CTVT3eUg_mZe-10NDYnJl9p-9w7',
+            status: 'Watching'
+          },
+          {
+            id: 'dexter_all_episodes',
+            title: 'Dexter - All Episodes',
+            type: 'TV Show',
+            tag: 'TV Show • All Episodes',
+            url: 'https://drive.google.com/drive/folders/1nsvWa58mrTciXnSNxvaBpfZST4DR7hbL',
+            status: 'Watching'
+          },
+          {
+            id: 'southpark_full_series',
+            title: 'South Park - Full Series',
+            type: 'TV Show',
+            tag: 'TV Show • Full Series',
+            url: 'https://drive.google.com/drive/folders/1PzKaoaK4blzlaoxnwC20gZoeYE5mDxWL',
+            status: 'Watching'
+          },
+          {
+            id: 'squidgame_s1',
+            title: 'Squid Game - Season 1',
+            type: 'TV Show',
+            tag: 'TV Show • Season 1',
+            url: 'https://drive.google.com/drive/folders/1jm_NYoQ6L1qhW_6olONm67INsBTQsv1a',
+            status: 'Watching'
+          },
+          {
+            id: 'squidgame_s2',
+            title: 'Squid Game - Season 2',
+            type: 'TV Show',
+            tag: 'TV Show • Season 2',
+            url: 'https://drive.google.com/drive/folders/1Yol6neCY6QEvc4Prcsr0djVtJDH_vIGu',
+            status: 'Watching'
+          },
+          {
+            id: 'squidgame_s3',
+            title: 'Squid Game - Season 3',
+            type: 'TV Show',
+            tag: 'TV Show • Season 3',
+            url: 'https://drive.google.com/drive/folders/1jgtMGD4eibrEkjoWGbRHsxP0XxUXw1OV',
+            status: 'Watching'
+          },
+          {
+            id: 'breaking_bad_full',
+            title: 'Breaking Bad - Full TV Show',
+            type: 'TV Show',
+            tag: 'TV Show • Full Series',
+            url: 'https://drive.google.com/drive/folders/1IY6qairkXpK2RXE0UVtqwm5ZjeiGYk3N',
+            status: 'Watching'
+          },
+          {
+            id: 'stranger_things_full',
+            title: 'Stranger Things - Full TV Show',
+            type: 'TV Show',
+            tag: 'TV Show • Full Series',
+            url: 'https://drive.google.com/drive/u/0/folders/1jAz194tABiNtrcHbX9kzyGqoLlzmUEJ3',
+            status: 'Watching'
+          },
+          {
+            id: 'it_welcome_to_derry_s1',
+            title: 'IT: Welcome to Derry - Season 1',
+            type: 'TV Show',
+            tag: 'TV Show • Season 1',
+            url: 'https://drive.google.com/drive/folders/1nl8QD9jezyXlZPs0JYqOjCWtd-A5rtmY',
+            status: 'Watching'
+          },
+          {
+            id: 'cleveland_show_s1',
+            title: 'The Cleveland Show - Season 1',
+            type: 'TV Show',
+            tag: 'TV Show • Season 1',
+            url: 'https://drive.google.com/drive/folders/12LSXyk8WZYc13n11VcNO2xC--SB_WxSV',
+            status: 'Watching'
+          },
+          {
+            id: 'cleveland_show_s2',
+            title: 'The Cleveland Show - Season 2',
+            type: 'TV Show',
+            tag: 'TV Show • Season 2',
+            url: 'https://drive.google.com/drive/folders/1eL4p0fZ-8nTm4P1M86csF-D1BeRkVz56',
+            status: 'Watching'
+          },
+          {
+            id: 'cleveland_show_s3',
+            title: 'The Cleveland Show - Season 3',
+            type: 'TV Show',
+            tag: 'TV Show • Season 3',
+            url: 'https://drive.google.com/drive/folders/1hQPZeBNT8rUTzDT4JGqdkcNUl8UoaKpb',
+            status: 'Watching'
+          },
+          {
+            id: 'cleveland_show_s4',
+            title: 'The Cleveland Show - Season 4',
+            type: 'TV Show',
+            tag: 'TV Show • Season 4',
+            url: 'https://drive.google.com/drive/folders/1F4mqBNkXFH2XqIHZWwG4pmWDKVXGg9y_',
+            status: 'Watching'
+          },
+          {
+            id: 'outer_banks_full_series',
+            title: 'Outer Banks - Full Series',
+            type: 'TV Show',
+            tag: 'TV Show • Full Series',
+            url: 'https://drive.google.com/drive/folders/1-2GIqLddtiou6bcJ9pUfVkZhUk_VnGML',
+            status: 'Watching'
+          }
+        ]
+      };
+
+      function loadEntertainmentData() {
+        const stored = readJSON(STORAGE_KEYS.ENTERTAINMENT, null);
+        if (stored && Array.isArray(stored.anime) && Array.isArray(stored.media)) {
+          let changed = false;
+
+          // Normalize existing entries so every item has status & tag
+          stored.anime.forEach((item) => {
+            if (!item.status) { item.status = 'Watching'; changed = true; }
+            if (!item.tag) { item.tag = 'Anime • Watchlist'; changed = true; }
+          });
+          stored.media.forEach((item) => {
+            if (!item.status) { item.status = 'Watching'; changed = true; }
+            if (!item.tag) { item.tag = item.subtitle || ((item.type || 'TV Show') + ' • Watchlist'); changed = true; }
+          });
+
+          // Auto-merge DEFAULT_ENTERTAINMENT.anime by normalized title/id without duplicates
+          DEFAULT_ENTERTAINMENT.anime.forEach((defItem) => {
+            const exists = stored.anime.some(
+              (x) => x.id === defItem.id || normalizeKey(x.title) === normalizeKey(defItem.title)
+            );
+            if (!exists) {
+              stored.anime.push(Object.assign({}, defItem));
+              changed = true;
+            }
+          });
+
+          // Auto-merge DEFAULT_ENTERTAINMENT.media by normalized title/id without duplicates
+          DEFAULT_ENTERTAINMENT.media.forEach((defItem) => {
+            const exists = stored.media.some(
+              (x) => x.id === defItem.id || normalizeKey(x.title) === normalizeKey(defItem.title)
+            );
+            if (!exists) {
+              stored.media.push(Object.assign({}, defItem));
+              changed = true;
+            }
+          });
+
+          if (changed) {
+            writeJSON(STORAGE_KEYS.ENTERTAINMENT, stored);
+          }
+          return stored;
+        }
+
+        const fresh = JSON.parse(JSON.stringify(DEFAULT_ENTERTAINMENT));
+        writeJSON(STORAGE_KEYS.ENTERTAINMENT, fresh);
+        return fresh;
+      }
+
+      let entertainmentData = loadEntertainmentData();
+      let currentStatusFilter = 'All';
+
+      function saveEntertainmentData() {
+        writeJSON(STORAGE_KEYS.ENTERTAINMENT, entertainmentData);
+      }
+
+      function getStatusBadgeClass(status) {
+        if (status === 'Completed') return 'status-badge status-completed';
+        if (status === 'Plan to Watch') return 'status-badge status-plan';
+        return 'status-badge status-watching';
+      }
+
+      function cycleWatchStatus(current) {
+        const order = ['Watching', 'Completed', 'Plan to Watch'];
+        const idx = order.indexOf(current);
+        return order[(idx + 1) % order.length];
+      }
+
+      function buildWatchlistCard(item, listType) {
+        const card = document.createElement('div');
+        card.className = 'ent-card';
+
+        const leftWrap = document.createElement('div');
+        leftWrap.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;';
+
+        const cleanUrl = normalizeUrl(item.url);
+        if (cleanUrl) {
+          const titleLink = document.createElement('a');
+          titleLink.className = 'ent-title-link';
+          titleLink.href = cleanUrl;
+          titleLink.target = '_blank';
+          titleLink.rel = 'noopener noreferrer';
+          titleLink.textContent = item.title;
+          leftWrap.appendChild(titleLink);
+        } else {
+          const titleSpan = document.createElement('div');
+          titleSpan.style.cssText = 'font-weight:700;font-size:0.93rem;';
+          titleSpan.textContent = item.title;
+          leftWrap.appendChild(titleSpan);
+        }
+
+        const metaRow = document.createElement('div');
+        metaRow.style.cssText = 'display:flex;align-items:center;gap:7px;flex-wrap:wrap;';
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'tag-chip';
+        tagSpan.textContent = item.tag || (listType === 'anime' ? 'Anime' : (item.type || 'TV Show'));
+        metaRow.appendChild(tagSpan);
+        leftWrap.appendChild(metaRow);
+
+        const rightWrap = document.createElement('div');
+        rightWrap.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;';
+
+        const statusBtn = document.createElement('button');
+        statusBtn.type = 'button';
+        statusBtn.className = getStatusBadgeClass(item.status || 'Watching');
+        statusBtn.textContent = item.status || 'Watching';
+        statusBtn.title = 'Click to cycle status (Watching -> Completed -> Plan to Watch)';
+        statusBtn.addEventListener('click', () => {
+          item.status = cycleWatchStatus(item.status || 'Watching');
+          saveEntertainmentData();
+          renderEntertainmentColumns();
+        });
+        rightWrap.appendChild(statusBtn);
+
+        if (cleanUrl) {
+          const openLink = document.createElement('a');
+          openLink.className = 'btn btn-sm btn-primary';
+          openLink.href = cleanUrl;
+          openLink.target = '_blank';
+          openLink.rel = 'noopener noreferrer';
+          openLink.textContent = 'Open Link ↗';
+          rightWrap.appendChild(openLink);
+        }
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn btn-sm btn-danger';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Delete entry';
+        delBtn.addEventListener('click', () => {
+          if (listType === 'anime') {
+            entertainmentData.anime = entertainmentData.anime.filter((x) => x.id !== item.id);
+          } else {
+            entertainmentData.media = entertainmentData.media.filter((x) => x.id !== item.id);
+          }
+          saveEntertainmentData();
+          renderEntertainmentColumns();
+          showToast('Deleted "' + item.title + '".');
+        });
+        rightWrap.appendChild(delBtn);
+
+        card.appendChild(leftWrap);
+        card.appendChild(rightWrap);
+        return card;
+      }
+
+      function renderEntertainmentColumns() {
+        const searchVal = (document.getElementById('ent-search-input').value || '').trim().toLowerCase();
+        document.getElementById('btn-ent-search-clear').classList.toggle('hidden', searchVal.length === 0);
+
+        const matchesItem = (item) => {
+          const statusMatch = currentStatusFilter === 'All' || (item.status || 'Watching') === currentStatusFilter;
+          const queryMatch =
+            !searchVal ||
+            item.title.toLowerCase().includes(searchVal) ||
+            (item.tag || '').toLowerCase().includes(searchVal);
+          return statusMatch && queryMatch;
+        };
+
+        // Render Anime Column
+        const animeBox = document.getElementById('anime-list-box');
+        const filteredAnime = entertainmentData.anime.filter(matchesItem);
+        document.getElementById('anime-count-badge').textContent =
+          filteredAnime.length === entertainmentData.anime.length
+            ? entertainmentData.anime.length + ' Items'
+            : filteredAnime.length + ' / ' + entertainmentData.anime.length + ' Items';
+
+        animeBox.innerHTML = '';
+        if (filteredAnime.length === 0) {
+          animeBox.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:0.84rem;border:1px dashed rgba(var(--accent-rgb),0.28);border-radius:14px;">No Anime entries match your current filter.</div>';
+        } else {
+          filteredAnime.forEach((item) => animeBox.appendChild(buildWatchlistCard(item, 'anime')));
+        }
+
+        // Render Shows & Movies Column
+        const mediaBox = document.getElementById('media-list-box');
+        const filteredMedia = entertainmentData.media.filter(matchesItem);
+        document.getElementById('media-count-badge').textContent =
+          filteredMedia.length === entertainmentData.media.length
+            ? entertainmentData.media.length + ' Items'
+            : filteredMedia.length + ' / ' + entertainmentData.media.length + ' Items';
+
+        mediaBox.innerHTML = '';
+        if (filteredMedia.length === 0) {
+          mediaBox.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:0.84rem;border:1px dashed rgba(var(--accent-rgb),0.28);border-radius:14px;">No Shows or Movies match your current filter.</div>';
+        } else {
+          filteredMedia.forEach((item) => mediaBox.appendChild(buildWatchlistCard(item, 'media')));
+        }
+      }
+
+      document.getElementById('ent-search-input').addEventListener('input', renderEntertainmentColumns);
+      document.getElementById('btn-ent-search-clear').addEventListener('click', () => {
+        document.getElementById('ent-search-input').value = '';
+        renderEntertainmentColumns();
+      });
+
+      document.querySelectorAll('[data-status-filter]').forEach((pill) => {
+        pill.addEventListener('click', () => {
+          currentStatusFilter = pill.dataset.statusFilter;
+          document.querySelectorAll('[data-status-filter]').forEach((p) => {
+            p.classList.toggle('is-active', p.dataset.statusFilter === currentStatusFilter);
+          });
+          renderEntertainmentColumns();
+        });
+      });
+
+      document.getElementById('form-add-anime').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('add-anime-title').value.trim();
+        const tagRaw = document.getElementById('add-anime-tag').value.trim();
+        const url = document.getElementById('add-anime-url').value.trim();
+        const status = document.getElementById('add-anime-status').value;
+        if (!title) return;
+
+        entertainmentData.anime.unshift({
+          id: 'ani_' + Date.now(),
+          title,
+          tag: tagRaw ? (tagRaw.toLowerCase().startsWith('anime') ? tagRaw : 'Anime • ' + tagRaw) : 'Anime • Series',
+          url,
+          status
+        });
+        saveEntertainmentData();
+        e.target.reset();
+        renderEntertainmentColumns();
+        showToast('Added "' + title + '" to Anime!');
+      });
+
+      document.getElementById('form-add-media').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('add-media-title').value.trim();
+        const type = document.getElementById('add-media-type').value;
+        const url = document.getElementById('add-media-url').value.trim();
+        const status = document.getElementById('add-media-status').value;
+        if (!title) return;
+
+        entertainmentData.media.unshift({
+          id: 'med_' + Date.now(),
+          title,
+          type,
+          tag: type + ' • Full Series',
+          url,
+          status
+        });
+        saveEntertainmentData();
+        e.target.reset();
+        renderEntertainmentColumns();
+        showToast('Added "' + title + '" to Shows & Movies!');
+      });
+
+      /* ----------------------------------------------------------------------
+         6. GAME SANDBOX (DARKNESS DASH, NEON SNAKE, VOID STAR SHOOTER, LOADER)
+         ---------------------------------------------------------------------- */
+      let activeGamePane = 'dash';
+      const gameScores = readJSON(STORAGE_KEYS.SCORES, { dash: 0, snake: 0, shooter: 0 });
+      const heldKeys = {};
+      let dashRaf = null;
+      let snakeRaf = null;
+      let shooterRaf = null;
+
+      function stopAllGameLoops() {
+        if (dashRaf) { cancelAnimationFrame(dashRaf); dashRaf = null; }
+        if (snakeRaf) { cancelAnimationFrame(snakeRaf); snakeRaf = null; }
+        if (shooterRaf) { cancelAnimationFrame(shooterRaf); shooterRaf = null; }
+      }
+
+      function sizeCanvasToBox(canvas) {
+        if (!canvas || !canvas.parentElement) return { w: 800, h: 410 };
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const w = Math.max(300, Math.floor(rect.width));
+        const h = Math.max(240, Math.floor(rect.height));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        return { w, h };
+      }
+
+      function exitGameFullscreen() {
+        document.querySelectorAll('.game-arena-box.is-fullscreen').forEach((box) => {
+          box.classList.remove('is-fullscreen');
+        });
+        document.querySelectorAll('[data-fullscreen-box]').forEach((btn) => {
+          btn.textContent = '⛶ Fullscreen';
+        });
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        } catch (err) {}
+      }
+
+      function toggleGameFullscreen(boxId) {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        const goingFull = !box.classList.contains('is-fullscreen');
+        if (goingFull) {
+          box.classList.add('is-fullscreen');
+          try { if (box.requestFullscreen) box.requestFullscreen().catch(() => {}); } catch (err) {}
+        } else {
+          box.classList.remove('is-fullscreen');
+          try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (err) {}
+        }
+        document.querySelectorAll('[data-fullscreen-box="' + boxId + '"]').forEach((btn) => {
+          btn.textContent = goingFull ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
+        });
+        window.requestAnimationFrame(() => {
+          sizeCanvasToBox(document.getElementById('dash-canvas'));
+          sizeCanvasToBox(document.getElementById('snake-canvas'));
+          sizeCanvasToBox(document.getElementById('shooter-canvas'));
+        });
+      }
+
+      document.querySelectorAll('[data-fullscreen-box]').forEach((btn) => {
+        btn.addEventListener('click', () => toggleGameFullscreen(btn.dataset.fullscreenBox));
+      });
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) exitGameFullscreen();
+      });
+
+      function activateGamePane(paneName) {
+        activeGamePane = paneName;
+        stopAllGameLoops();
+
+        document.querySelectorAll('[data-game-tab]').forEach((btn) => {
+          btn.classList.toggle('btn-primary', btn.dataset.gameTab === paneName);
+        });
+        ['dash', 'snake', 'shooter', 'loader'].forEach((p) => {
+          const el = document.getElementById('game-pane-' + p);
+          if (el) el.classList.toggle('hidden', p !== paneName);
+        });
+
+        if (paneName === 'dash') {
+          window.requestAnimationFrame(() => {
+            sizeCanvasToBox(dashCanvas);
+            resetDashGame(false);
+            startDashLoop();
+          });
+        } else if (paneName === 'snake') {
+          window.requestAnimationFrame(() => {
+            sizeCanvasToBox(snakeCanvas);
+            resetSnakeGame();
+            startSnakeLoop();
+          });
+        } else if (paneName === 'shooter') {
+          window.requestAnimationFrame(() => {
+            sizeCanvasToBox(shooterCanvas);
+            resetShooterGame();
+            startShooterLoop();
+          });
+        }
+      }
+
+      document.querySelectorAll('[data-game-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => activateGamePane(btn.dataset.gameTab));
+      });
+
+      /* 6A. GEOMETRY DASH (DARKNESS DASH) */
+      const dashCanvas = document.getElementById('dash-canvas');
+      const dashCtx = dashCanvas ? dashCanvas.getContext('2d') : null;
+      const DASH_STAGES = [
+        { speed: 6.4, length: 4800, color: '#38bdf8' },
+        { speed: 7.6, length: 5600, color: '#c084fc' },
+        { speed: 8.8, length: 6400, color: '#fb7185' }
+      ];
+      let dashStageIdx = 0;
+      let dashAttempt = 1;
+      let dashState = null;
+
+      function generateDashCourse(stageIdx) {
+        const st = DASH_STAGES[stageIdx] || DASH_STAGES[0];
+        const items = [];
+        let x = 600;
+        let step = 0;
+        while (x < st.length - 440) {
+          const pattern = (step + stageIdx) % 5;
+          if (pattern === 0) {
+            items.push({ type: 'spike', x, w: 34, h: 36, yOff: 0 });
+            x += 265;
+          } else if (pattern === 1) {
+            items.push({ type: 'platform', x, w: 54, h: 42, yOff: 0 });
+            items.push({ type: 'spike', x: x + 54, w: 32, h: 34, yOff: 0 });
+            x += 315;
+          } else if (pattern === 2) {
+            items.push({ type: 'spike', x, w: 30, h: 34, yOff: 0 });
+            items.push({ type: 'spike', x: x + 30, w: 30, h: 34, yOff: 0 });
+            x += 300;
+          } else if (pattern === 3) {
+            items.push({ type: 'pad', x, w: 38, h: 12, yOff: 0 });
+            items.push({ type: 'spike', x: x + 65, w: 34, h: 36, yOff: 0 });
+            items.push({ type: 'spike', x: x + 100, w: 34, h: 36, yOff: 0 });
+            x += 340;
+          } else {
+            items.push({ type: 'platform', x, w: 50, h: 40, yOff: 0 });
+            items.push({ type: 'platform', x: x + 125, w: 52, h: 78, yOff: 0 });
+            x += 345;
+          }
+          step++;
+        }
+        return items;
+      }
+
+      function resetDashGame(incAttempt) {
+        if (incAttempt) dashAttempt++;
+        dashState = {
+          scrollX: 0,
+          y: 0,
+          vy: 0,
+          rot: 0,
+          onGround: true,
+          crashed: false,
+          cleared: false,
+          course: generateDashCourse(dashStageIdx),
+          sparks: []
+        };
+        document.getElementById('dash-attempt').textContent = String(dashAttempt);
+        document.getElementById('dash-progress').textContent = '0%';
+        document.getElementById('dash-best').textContent = (gameScores.dash || 0) + '%';
+      }
+
+      function triggerDashJump() {
+        if (!dashState) return;
+        if (dashState.crashed || dashState.cleared) {
+          resetDashGame(dashState.crashed);
+          return;
+        }
+        if (dashState.onGround) {
+          dashState.vy = 13.0;
+          dashState.onGround = false;
+          for (let i = 0; i < 8; i++) {
+            dashState.sparks.push({
+              x: 125,
+              y: dashState.y + 4,
+              vx: (Math.random() - 0.5) * 6,
+              vy: Math.random() * 5 + 1,
+              life: 1
+            });
+          }
+        }
+      }
+
+      function startDashLoop() {
+        function loop() {
+          if (activeNavTab !== 'games' || activeGamePane !== 'dash') return;
+          renderDashFrame();
+          dashRaf = requestAnimationFrame(loop);
+        }
+        dashRaf = requestAnimationFrame(loop);
+      }
+
+      function renderDashFrame() {
+        if (!dashCtx || !dashCanvas || !dashState) return;
+        const { w, h } = sizeCanvasToBox(dashCanvas);
+        const groundY = h - 68;
+        const stage = DASH_STAGES[dashStageIdx] || DASH_STAGES[0];
+        const size = 34;
+        const cubeX = 120;
+
+        const grad = dashCtx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, '#020308');
+        grad.addColorStop(1, '#080d1e');
+        dashCtx.fillStyle = grad;
+        dashCtx.fillRect(0, 0, w, h);
+
+        // Background grid lines
+        dashCtx.strokeStyle = 'rgba(255,255,255,0.045)';
+        dashCtx.lineWidth = 1;
+        const gxStart = -(dashState.scrollX * 0.35) % 48;
+        for (let gx = gxStart; gx < w; gx += 48) {
+          dashCtx.beginPath();
+          dashCtx.moveTo(gx, 0);
+          dashCtx.lineTo(gx, groundY);
+          dashCtx.stroke();
+        }
+
+        if (!dashState.crashed && !dashState.cleared) {
+          dashState.scrollX += stage.speed;
+          dashState.vy -= 0.72;
+          dashState.y += dashState.vy;
+
+          if (dashState.y <= 0) {
+            dashState.y = 0;
+            dashState.vy = 0;
+            dashState.onGround = true;
+            dashState.rot = Math.round(dashState.rot / (Math.PI / 2)) * (Math.PI / 2);
+          } else {
+            dashState.onGround = false;
+            dashState.rot += 0.135;
+          }
+
+          const pct = Math.min(100, Math.floor((dashState.scrollX / stage.length) * 100));
+          document.getElementById('dash-progress').textContent = pct + '%';
+          if (pct > (gameScores.dash || 0)) {
+            gameScores.dash = pct;
+            writeJSON(STORAGE_KEYS.SCORES, gameScores);
+            document.getElementById('dash-best').textContent = pct + '%';
+          }
+          if (pct >= 100) dashState.cleared = true;
+        }
+
+        // Ground line
+        dashCtx.fillStyle = '#040610';
+        dashCtx.fillRect(0, groundY, w, h - groundY);
+        dashCtx.strokeStyle = stage.color;
+        dashCtx.lineWidth = 3;
+        dashCtx.beginPath();
+        dashCtx.moveTo(0, groundY);
+        dashCtx.lineTo(w, groundY);
+        dashCtx.stroke();
+
+        const pLeft = cubeX + 4;
+        const pRight = cubeX + size - 4;
+        const pBottom = groundY - dashState.y;
+        const pTop = pBottom - size;
+
+        dashState.course.forEach((o) => {
+          const sx = o.x - dashState.scrollX + cubeX;
+          if (sx + o.w < -40 || sx > w + 40) return;
+
+          if (o.type === 'spike') {
+            const sy = groundY - o.yOff;
+            dashCtx.fillStyle = '#fb7185';
+            dashCtx.strokeStyle = '#ffffff';
+            dashCtx.lineWidth = 1.5;
+            dashCtx.beginPath();
+            dashCtx.moveTo(sx, sy);
+            dashCtx.lineTo(sx + o.w / 2, sy - o.h);
+            dashCtx.lineTo(sx + o.w, sy);
+            dashCtx.closePath();
+            dashCtx.fill();
+            dashCtx.stroke();
+
+            if (!dashState.crashed && !dashState.cleared) {
+              if (pRight > sx + 8 && pLeft < sx + o.w - 8 && pBottom > sy - o.h + 10 && pTop < sy) {
+                dashState.crashed = true;
+              }
+            }
+          } else if (o.type === 'platform') {
+            const sy = groundY - o.yOff - o.h;
+            dashCtx.fillStyle = 'rgba(15, 23, 42, 0.96)';
+            dashCtx.strokeStyle = stage.color;
+            dashCtx.lineWidth = 2;
+            dashCtx.fillRect(sx, sy, o.w, o.h);
+            dashCtx.strokeRect(sx, sy, o.w, o.h);
+
+            if (!dashState.crashed && !dashState.cleared) {
+              if (pRight > sx && pLeft < sx + o.w && pBottom > sy && pTop < sy + o.h) {
+                if (dashState.vy <= 0 && pBottom - dashState.vy <= sy + 14) {
+                  dashState.y = groundY - sy;
+                  dashState.vy = 0;
+                  dashState.onGround = true;
+                  dashState.rot = Math.round(dashState.rot / (Math.PI / 2)) * (Math.PI / 2);
+                } else {
+                  dashState.crashed = true;
+                }
+              }
+            }
+          } else if (o.type === 'pad') {
+            const sy = groundY - o.h;
+            dashCtx.fillStyle = '#fbbf24';
+            dashCtx.fillRect(sx, sy, o.w, o.h);
+            if (!dashState.crashed && !dashState.cleared && pRight > sx && pLeft < sx + o.w && pBottom >= sy) {
+              dashState.vy = 16.5;
+              dashState.onGround = false;
+            }
+          }
+        });
+
+        // Glowing Neon Cube
+        if (!dashState.crashed) {
+          dashCtx.save();
+          dashCtx.translate(cubeX + size / 2, groundY - dashState.y - size / 2);
+          dashCtx.rotate(dashState.rot);
+          dashCtx.shadowColor = stage.color;
+          dashCtx.shadowBlur = 16;
+          dashCtx.fillStyle = stage.color;
+          dashCtx.fillRect(-size / 2, -size / 2, size, size);
+          dashCtx.shadowBlur = 0;
+          dashCtx.strokeStyle = '#ffffff';
+          dashCtx.lineWidth = 2.5;
+          dashCtx.strokeRect(-size / 2, -size / 2, size, size);
+          dashCtx.fillStyle = '#03050c';
+          dashCtx.fillRect(-6, -7, 5, 5);
+          dashCtx.fillRect(4, -7, 5, 5);
+          dashCtx.fillRect(-6, 3, 15, 4);
+          dashCtx.restore();
+        }
+
+        // Sparks
+        for (let i = dashState.sparks.length - 1; i >= 0; i--) {
+          const sp = dashState.sparks[i];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.vy -= 0.25;
+          sp.life -= 0.04;
+          if (sp.life <= 0) {
+            dashState.sparks.splice(i, 1);
+          } else {
+            dashCtx.globalAlpha = sp.life;
+            dashCtx.fillStyle = '#ffffff';
+            dashCtx.fillRect(sp.x, groundY - sp.y, 4, 4);
+          }
+        }
+        dashCtx.globalAlpha = 1;
+
+        // Top Progress Bar
+        const ratio = Math.min(1, dashState.scrollX / stage.length);
+        dashCtx.fillStyle = 'rgba(255,255,255,0.14)';
+        dashCtx.fillRect(w * 0.25, 16, w * 0.5, 8);
+        dashCtx.fillStyle = stage.color;
+        dashCtx.fillRect(w * 0.25, 16, w * 0.5 * ratio, 8);
+
+        if (dashState.crashed || dashState.cleared) {
+          dashCtx.fillStyle = 'rgba(0,0,0,0.76)';
+          dashCtx.fillRect(0, 0, w, h);
+          dashCtx.fillStyle = '#ffffff';
+          dashCtx.font = '700 22px Space Grotesk, sans-serif';
+          dashCtx.textAlign = 'center';
+          dashCtx.fillText(
+            dashState.cleared ? 'STAGE CLEARED! CLICK OR PRESS SPACE TO PLAY AGAIN' : 'CRASHED! PRESS SPACE OR CLICK TO RETRY',
+            w / 2,
+            h / 2
+          );
+        }
+      }
+
+      document.getElementById('dash-stage-select').addEventListener('change', (e) => {
+        dashStageIdx = Number(e.target.value) || 0;
+        dashAttempt = 1;
+        resetDashGame(false);
+      });
+      document.getElementById('btn-dash-restart').addEventListener('click', () => resetDashGame(true));
+      document.getElementById('btn-dash-jump').addEventListener('click', triggerDashJump);
+      if (dashCanvas) {
+        dashCanvas.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          triggerDashJump();
+        });
+      }
+
+      /* 6B. NEON SNAKE */
+      const snakeCanvas = document.getElementById('snake-canvas');
+      const snakeCtx = snakeCanvas ? snakeCanvas.getContext('2d') : null;
+      let snakeState = null;
+
+      function resetSnakeGame() {
+        snakeState = {
+          cell: 20,
+          dir: { x: 1, y: 0 },
+          nextDir: { x: 1, y: 0 },
+          body: [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }],
+          food: { x: 14, y: 8 },
+          score: 0,
+          over: false,
+          lastTick: 0
+        };
+        document.getElementById('snake-score').textContent = '0';
+        document.getElementById('snake-best').textContent = String(gameScores.snake || 0);
+      }
+
+      function steerSnake(dir) {
+        if (!snakeState || !snakeState.dir) return;
+        if (dir === 'LEFT' && snakeState.dir.x !== 1) snakeState.nextDir = { x: -1, y: 0 };
+        if (dir === 'RIGHT' && snakeState.dir.x !== -1) snakeState.nextDir = { x: 1, y: 0 };
+        if (dir === 'UP' && snakeState.dir.y !== 1) snakeState.nextDir = { x: 0, y: -1 };
+        if (dir === 'DOWN' && snakeState.dir.y !== -1) snakeState.nextDir = { x: 0, y: 1 };
+      }
+
+      function startSnakeLoop() {
+        function loop(now) {
+          if (activeNavTab !== 'games' || activeGamePane !== 'snake') return;
+          renderSnakeFrame(now);
+          snakeRaf = requestAnimationFrame(loop);
+        }
+        snakeRaf = requestAnimationFrame(loop);
+      }
+
+      function renderSnakeFrame(now) {
+        if (!snakeCtx || !snakeCanvas || !snakeState) return;
+        const { w, h } = sizeCanvasToBox(snakeCanvas);
+        const cell = snakeState.cell;
+        const cols = Math.floor(w / cell);
+        const rows = Math.floor(h / cell);
+
+        snakeCtx.fillStyle = '#020308';
+        snakeCtx.fillRect(0, 0, w, h);
+
+        if (!snakeState.over && now - snakeState.lastTick > 90) {
+          snakeState.lastTick = now;
+          snakeState.dir = snakeState.nextDir;
+          const head = {
+            x: snakeState.body[0].x + snakeState.dir.x,
+            y: snakeState.body[0].y + snakeState.dir.y
+          };
+          if (
+            head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows ||
+            snakeState.body.some((s) => s.x === head.x && s.y === head.y)
+          ) {
+            snakeState.over = true;
+          } else {
+            snakeState.body.unshift(head);
+            if (head.x === snakeState.food.x && head.y === snakeState.food.y) {
+              snakeState.score += 25;
+              document.getElementById('snake-score').textContent = String(snakeState.score);
+              if (snakeState.score > (gameScores.snake || 0)) {
+                gameScores.snake = snakeState.score;
+                writeJSON(STORAGE_KEYS.SCORES, gameScores);
+                document.getElementById('snake-best').textContent = String(snakeState.score);
+              }
+              snakeState.food = {
+                x: Math.floor(Math.random() * Math.max(1, cols)),
+                y: Math.floor(Math.random() * Math.max(1, rows))
+              };
+            } else {
+              snakeState.body.pop();
+            }
+          }
+        }
+
+        // Glowing Orb
+        snakeCtx.fillStyle = '#fbbf24';
+        snakeCtx.shadowColor = '#fbbf24';
+        snakeCtx.shadowBlur = 14;
+        snakeCtx.beginPath();
+        snakeCtx.arc(snakeState.food.x * cell + cell / 2, snakeState.food.y * cell + cell / 2, cell * 0.36, 0, Math.PI * 2);
+        snakeCtx.fill();
+        snakeCtx.shadowBlur = 0;
+
+        // Snake Segments
+        snakeState.body.forEach((seg, idx) => {
+          snakeCtx.fillStyle = idx === 0 ? '#ffffff' : '#34d399';
+          snakeCtx.fillRect(seg.x * cell + 1, seg.y * cell + 1, cell - 2, cell - 2);
+        });
+
+        if (snakeState.over) {
+          snakeCtx.fillStyle = 'rgba(0,0,0,0.78)';
+          snakeCtx.fillRect(0, 0, w, h);
+          snakeCtx.fillStyle = '#ffffff';
+          snakeCtx.font = '700 22px Space Grotesk, sans-serif';
+          snakeCtx.textAlign = 'center';
+          snakeCtx.fillText('GAME OVER! CLICK RESTART TO PLAY AGAIN', w / 2, h / 2);
+        }
+      }
+
+      document.getElementById('btn-snake-restart').addEventListener('click', resetSnakeGame);
+      document.querySelectorAll('[data-snake-dir]').forEach((btn) => {
+        btn.addEventListener('click', () => steerSnake(btn.dataset.snakeDir));
+      });
+
+      /* 6C. VOID STAR SHOOTER */
+      const shooterCanvas = document.getElementById('shooter-canvas');
+      const shooterCtx = shooterCanvas ? shooterCanvas.getContext('2d') : null;
+      let shooterState = null;
+
+      function resetShooterGame() {
+        const { w } = sizeCanvasToBox(shooterCanvas);
+        shooterState = {
+          shipX: w / 2,
+          hull: 100,
+          score: 0,
+          over: false,
+          lasers: [],
+          enemies: [],
+          sparks: [],
+          tick: 0,
+          fireCooldown: 0
+        };
+        document.getElementById('shooter-score').textContent = '0';
+        document.getElementById('shooter-best').textContent = String(gameScores.shooter || 0);
+        document.getElementById('shooter-hull').textContent = '100%';
+      }
+
+      function fireVoidLaser() {
+        if (!shooterState || shooterState.over) return;
+        const { h } = sizeCanvasToBox(shooterCanvas);
+        shooterState.lasers.push({ x: shooterState.shipX, y: h - 54, vy: -10.5 });
+      }
+
+      function startShooterLoop() {
+        function loop() {
+          if (activeNavTab !== 'games' || activeGamePane !== 'shooter') return;
+          renderShooterFrame();
+          shooterRaf = requestAnimationFrame(loop);
+        }
+        shooterRaf = requestAnimationFrame(loop);
+      }
+
+      function renderShooterFrame() {
+        if (!shooterCtx || !shooterCanvas || !shooterState) return;
+        const { w, h } = sizeCanvasToBox(shooterCanvas);
+        const shipY = h - 38;
+
+        shooterCtx.fillStyle = '#020308';
+        shooterCtx.fillRect(0, 0, w, h);
+
+        if (!shooterState.over) {
+          if (heldKeys.ArrowLeft || heldKeys.KeyA) shooterState.shipX -= 7.2;
+          if (heldKeys.ArrowRight || heldKeys.KeyD) shooterState.shipX += 7.2;
+          shooterState.shipX = Math.max(22, Math.min(w - 22, shooterState.shipX));
+
+          shooterState.tick++;
+          if (shooterState.fireCooldown > 0) shooterState.fireCooldown--;
+          if ((heldKeys.Space || shooterState.tick % 18 === 0) && shooterState.fireCooldown === 0) {
+            fireVoidLaser();
+            shooterState.fireCooldown = 10;
+          }
+
+          if (shooterState.tick % 36 === 0) {
+            shooterState.enemies.push({
+              x: 26 + Math.random() * (w - 52),
+              y: -20,
+              r: 14 + Math.random() * 8,
+              vy: 2.6 + Math.random() * 2.2
+            });
+          }
+
+          // Update lasers
+          for (let i = shooterState.lasers.length - 1; i >= 0; i--) {
+            const l = shooterState.lasers[i];
+            l.y += l.vy;
+            if (l.y < -15) shooterState.lasers.splice(i, 1);
+          }
+
+          // Update enemies & collisions
+          for (let i = shooterState.enemies.length - 1; i >= 0; i--) {
+            const en = shooterState.enemies[i];
+            en.y += en.vy;
+
+            let hit = false;
+            for (let j = shooterState.lasers.length - 1; j >= 0; j--) {
+              const l = shooterState.lasers[j];
+              if (Math.hypot(l.x - en.x, l.y - en.y) < en.r + 6) {
+                shooterState.lasers.splice(j, 1);
+                hit = true;
+                break;
+              }
+            }
+
+            if (hit) {
+              for (let k = 0; k < 10; k++) {
+                shooterState.sparks.push({
+                  x: en.x,
+                  y: en.y,
+                  vx: (Math.random() - 0.5) * 6,
+                  vy: (Math.random() - 0.5) * 6,
+                  life: 1
+                });
+              }
+              shooterState.enemies.splice(i, 1);
+              shooterState.score += 50;
+              document.getElementById('shooter-score').textContent = String(shooterState.score);
+              if (shooterState.score > (gameScores.shooter || 0)) {
+                gameScores.shooter = shooterState.score;
+                writeJSON(STORAGE_KEYS.SCORES, gameScores);
+                document.getElementById('shooter-best').textContent = String(shooterState.score);
+              }
+              continue;
+            }
+
+            if (Math.hypot(en.x - shooterState.shipX, en.y - shipY) < en.r + 16 || en.y > h + 15) {
+              shooterState.enemies.splice(i, 1);
+              shooterState.hull = Math.max(0, shooterState.hull - 25);
+              document.getElementById('shooter-hull').textContent = shooterState.hull + '%';
+              if (shooterState.hull <= 0) {
+                shooterState.over = true;
+              }
+            }
+          }
+        }
+
+        // Draw Lasers
+        shooterCtx.fillStyle = '#38bdf8';
+        shooterState.lasers.forEach((l) => {
+          shooterCtx.fillRect(l.x - 2, l.y - 10, 4, 16);
+        });
+
+        // Draw Enemies
+        shooterState.enemies.forEach((en) => {
+          shooterCtx.fillStyle = '#fb7185';
+          shooterCtx.beginPath();
+          shooterCtx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+          shooterCtx.fill();
+          shooterCtx.strokeStyle = '#ffffff';
+          shooterCtx.lineWidth = 1.5;
+          shooterCtx.stroke();
+        });
+
+        // Draw Starfighter
+        shooterCtx.fillStyle = '#e2e8f0';
+        shooterCtx.beginPath();
+        shooterCtx.moveTo(shooterState.shipX, shipY - 18);
+        shooterCtx.lineTo(shooterState.shipX - 18, shipY + 14);
+        shooterCtx.lineTo(shooterState.shipX + 18, shipY + 14);
+        shooterCtx.closePath();
+        shooterCtx.fill();
+
+        // Draw Sparks
+        for (let i = shooterState.sparks.length - 1; i >= 0; i--) {
+          const sp = shooterState.sparks[i];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.life -= 0.04;
+          if (sp.life <= 0) shooterState.sparks.splice(i, 1);
+          else {
+            shooterCtx.globalAlpha = sp.life;
+            shooterCtx.fillStyle = '#fbbf24';
+            shooterCtx.fillRect(sp.x, sp.y, 4, 4);
+          }
+        }
+        shooterCtx.globalAlpha = 1;
+
+        if (shooterState.over) {
+          shooterCtx.fillStyle = 'rgba(0,0,0,0.78)';
+          shooterCtx.fillRect(0, 0, w, h);
+          shooterCtx.fillStyle = '#ffffff';
+          shooterCtx.font = '700 22px Space Grotesk, sans-serif';
+          shooterCtx.textAlign = 'center';
+          shooterCtx.fillText('HULL BREACHED! CLICK RESTART TO RELAUNCH', w / 2, h / 2);
+        }
+      }
+
+      if (shooterCanvas) {
+        shooterCanvas.addEventListener('pointermove', (e) => {
+          if (!shooterState || shooterState.over) return;
+          const rect = shooterCanvas.getBoundingClientRect();
+          shooterState.shipX = Math.max(22, Math.min(rect.width - 22, e.clientX - rect.left));
+        });
+        shooterCanvas.addEventListener('pointerdown', () => fireVoidLaser());
+      }
+      document.getElementById('btn-shooter-restart').addEventListener('click', resetShooterGame);
+      document.getElementById('btn-shoot-left').addEventListener('click', () => {
+        if (shooterState) shooterState.shipX = Math.max(22, shooterState.shipX - 40);
+      });
+      document.getElementById('btn-shoot-right').addEventListener('click', () => {
+        const { w } = sizeCanvasToBox(shooterCanvas);
+        if (shooterState) shooterState.shipX = Math.min(w - 22, shooterState.shipX + 40);
+      });
+      document.getElementById('btn-shoot-fire').addEventListener('click', fireVoidLaser);
+
+      /* 6D. DRAG & DROP CUSTOM GAME LOADER */
+      const uploadedGames = [];
+      let currentCustomGame = null;
+      const customDropzone = document.getElementById('custom-dropzone');
+      const customFileInput = document.getElementById('custom-file-input');
+      const customIframe = document.getElementById('custom-game-iframe');
+
+      function ingestGameFiles(fileList) {
+        Array.from(fileList || []).forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const content = String(reader.result || '');
+            const isJs = file.name.toLowerCase().endsWith('.js');
+            const wrappedHtml = isJs
+              ? '<!DOCTYPE html><html><head><style>html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;}canvas{max-width:100%;max-height:100%;}</style></head><body><canvas id="game" width="800" height="450"></canvas><script>' + content + '<\/script></body></html>'
+              : content;
+
+            const entry = {
+              id: 'ug_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+              name: file.name,
+              html: wrappedHtml
+            };
+            uploadedGames.push(entry);
+            renderUploadedGamesList();
+            runCustomGame(entry);
+            showToast('Loaded ' + file.name);
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function renderUploadedGamesList() {
+        const bar = document.getElementById('custom-games-bar');
+        const list = document.getElementById('custom-games-list');
+        bar.classList.toggle('hidden', uploadedGames.length === 0);
+        list.innerHTML = '';
+        uploadedGames.forEach((g) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-sm';
+          btn.textContent = '▶ ' + g.name;
+          btn.addEventListener('click', () => runCustomGame(g));
+          list.appendChild(btn);
+        });
+      }
+
+      function runCustomGame(entry) {
+        currentCustomGame = entry;
+        document.getElementById('custom-runner-name').textContent = entry.name;
+        if (customIframe) {
+          customIframe.srcdoc = entry.html;
+          setTimeout(() => {
+            try { customIframe.focus(); } catch (err) {}
+          }, 100);
+        }
+      }
+
+      customDropzone.addEventListener('click', () => customFileInput.click());
+      customFileInput.addEventListener('change', (e) => ingestGameFiles(e.target.files));
+      customDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        customDropzone.classList.add('drag-over');
+      });
+      customDropzone.addEventListener('dragleave', () => customDropzone.classList.remove('drag-over'));
+      customDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        customDropzone.classList.remove('drag-over');
+        if (e.dataTransfer && e.dataTransfer.files) ingestGameFiles(e.dataTransfer.files);
+      });
+      document.getElementById('btn-custom-reset').addEventListener('click', () => {
+        if (currentCustomGame) {
+          runCustomGame(currentCustomGame);
+          showToast('Reset ' + currentCustomGame.name);
+        } else if (customIframe) {
+          customIframe.srcdoc = '';
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         7. STUDY & TOOLS MODULE (SCIENTIFIC CALCULATOR + STUDY HELP SUITE)
+         ---------------------------------------------------------------------- */
+      let calcExpression = '';
+      const calcHistory = [];
+
+      function evaluateScientificMath(raw) {
+        const cleaned = String(raw || '')
+          .replace(/×/g, '*')
+          .replace(/÷/g, '/')
+          .replace(/−/g, '-')
+          .trim();
+        if (!cleaned) throw new Error('Empty expression');
+
+        const tokens = [];
+        let i = 0;
+        while (i < cleaned.length) {
+          const ch = cleaned[i];
+          if (/\s/.test(ch)) { i++; continue; }
+          if (/[0-9.]/.test(ch)) {
+            let numStr = '';
+            while (i < cleaned.length && /[0-9.]/.test(cleaned[i])) numStr += cleaned[i++];
+            const val = parseFloat(numStr);
+            if (Number.isNaN(val)) throw new Error('Invalid number');
+            tokens.push({ type: 'num', val });
+            continue;
+          }
+          if (/[a-zA-Z]/.test(ch)) {
+            let ident = '';
+            while (i < cleaned.length && /[a-zA-Z]/.test(cleaned[i])) ident += cleaned[i++];
+            const low = ident.toLowerCase();
+            if (low === 'pi') tokens.push({ type: 'num', val: Math.PI });
+            else if (low === 'e') tokens.push({ type: 'num', val: Math.E });
+            else tokens.push({ type: 'fn', val: low });
+            continue;
+          }
+          if ('+-*/^()'.includes(ch)) {
+            tokens.push({ type: 'op', val: ch });
+            i++;
+            continue;
+          }
+          throw new Error('Unexpected character');
+        }
+
+        let pos = 0;
+        const peek = () => tokens[pos] || null;
+        const consume = () => tokens[pos++];
+
+        function parseAddSub() {
+          let left = parseMulDiv();
+          while (peek() && peek().type === 'op' && (peek().val === '+' || peek().val === '-')) {
+            const op = consume().val;
+            const right = parseMulDiv();
+            left = op === '+' ? left + right : left - right;
+          }
+          return left;
+        }
+
+        function parseMulDiv() {
+          let left = parsePower();
+          while (peek() && peek().type === 'op' && (peek().val === '*' || peek().val === '/')) {
+            const op = consume().val;
+            const right = parsePower();
+            if (op === '/' && right === 0) throw new Error('Division by zero');
+            left = op === '*' ? left * right : left / right;
+          }
+          return left;
+        }
+
+        function parsePower() {
+          let base = parseUnary();
+          if (peek() && peek().type === 'op' && peek().val === '^') {
+            consume();
+            base = Math.pow(base, parsePower());
+          }
+          return base;
+        }
+
+        function parseUnary() {
+          if (peek() && peek().type === 'op' && (peek().val === '+' || peek().val === '-')) {
+            const op = consume().val;
+            const val = parseUnary();
+            return op === '-' ? -val : val;
+          }
+          return parseAtom();
+        }
+
+        function parseAtom() {
+          const tok = peek();
+          if (!tok) throw new Error('Unexpected end');
+          if (tok.type === 'num') { consume(); return tok.val; }
+          if (tok.type === 'fn') {
+            const fn = consume().val;
+            const arg = parseUnary();
+            if (fn === 'sin') return Math.sin(arg);
+            if (fn === 'cos') return Math.cos(arg);
+            if (fn === 'tan') return Math.tan(arg);
+            if (fn === 'sqrt') return Math.sqrt(arg);
+            if (fn === 'log') return Math.log10 ? Math.log10(arg) : Math.log(arg) / Math.LN10;
+            if (fn === 'ln') return Math.log(arg);
+            throw new Error('Unknown function');
+          }
+          if (tok.type === 'op' && tok.val === '(') {
+            consume();
+            const inner = parseAddSub();
+            if (!peek() || peek().val !== ')') throw new Error('Missing closing parenthesis');
+            consume();
+            return inner;
+          }
+          throw new Error('Syntax error');
+        }
+
+        const result = parseAddSub();
+        if (pos < tokens.length || !Number.isFinite(result)) throw new Error('Invalid calculation');
+        return Math.round(result * 1e10) / 1e10;
+      }
+
+      function handleCalcInput(key) {
+        const exprLine = document.getElementById('calc-expr-line');
+        const resLine = document.getElementById('calc-result-line');
+
+        if (key === 'C') {
+          calcExpression = '';
+          exprLine.textContent = '';
+          resLine.textContent = '0';
+          return;
+        }
+        if (key === 'DEL') {
+          calcExpression = calcExpression.slice(0, -1);
+          exprLine.textContent = calcExpression;
+          return;
+        }
+        if (key === '=') {
+          if (!calcExpression) return;
+          try {
+            const ans = evaluateScientificMath(calcExpression);
+            calcHistory.unshift({ expr: calcExpression, ans: String(ans) });
+            if (calcHistory.length > 8) calcHistory.pop();
+            exprLine.textContent = calcExpression + ' =';
+            resLine.textContent = String(ans);
+            calcExpression = String(ans);
+            renderCalcHistory();
+          } catch (err) {
+            resLine.textContent = 'Error';
+          }
+          return;
+        }
+        calcExpression += key;
+        exprLine.textContent = calcExpression;
+      }
+
+      function renderCalcHistory() {
+        const list = document.getElementById('calc-history-list');
+        if (!list) return;
+        list.innerHTML = '';
+        calcHistory.forEach((entry) => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;justify-content:space-between;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.04);font-family:var(--font-mono);font-size:0.75rem;cursor:pointer;';
+          row.innerHTML = '<span>' + escapeHTML(entry.expr) + '</span><strong style="color:var(--accent);">= ' + escapeHTML(entry.ans) + '</strong>';
+          row.addEventListener('click', () => {
+            calcExpression = entry.ans;
+            document.getElementById('calc-result-line').textContent = entry.ans;
+          });
+          list.appendChild(row);
+        });
+      }
+
+      document.querySelectorAll('[data-calc-key]').forEach((btn) => {
+        btn.addEventListener('click', () => handleCalcInput(btn.dataset.calcKey));
+      });
+
+      /* Study Help Suite: Flashcards, Pomodoro & Notes */
+      document.querySelectorAll('[data-study-pane]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.studyPane;
+          document.querySelectorAll('[data-study-pane]').forEach((b) => {
+            b.classList.toggle('btn-primary', b.dataset.studyPane === target);
+          });
+          ['flashcards', 'pomodoro', 'notes'].forEach((pane) => {
+            const el = document.getElementById('study-pane-' + pane);
+            if (el) el.classList.toggle('hidden', pane !== target);
+          });
+        });
+      });
+
+      const DEFAULT_CARDS = [
+        { topic: 'Math', q: 'What is the derivative of sin(x)?', a: 'cos(x)' },
+        { topic: 'Math', q: 'State the Quadratic Formula.', a: 'x = (-b ± √(b² - 4ac)) / 2a' },
+        { topic: 'Biology', q: 'Which organelle produces ATP energy in cells?', a: 'Mitochondria' },
+        { topic: 'Physics', q: 'State Newton’s Second Law of Motion.', a: 'F = ma (Force = Mass × Acceleration)' },
+        { topic: 'Computer Science', q: 'What is the time complexity of Binary Search?', a: 'O(log n)' },
+        { topic: 'Chemistry', q: 'State the Ideal Gas Law.', a: 'PV = nRT' }
+      ];
+
+      let flashcardDeck = readJSON(STORAGE_KEYS.FLASHCARDS, DEFAULT_CARDS);
+      if (!Array.isArray(flashcardDeck) || flashcardDeck.length === 0) {
+        flashcardDeck = DEFAULT_CARDS.slice();
+      }
+      let currentCardIdx = 0;
+      let isCardFlipped = false;
+
+      function renderCurrentFlashcard() {
+        if (flashcardDeck.length === 0) {
+          flashcardDeck = DEFAULT_CARDS.slice();
+        }
+        if (currentCardIdx >= flashcardDeck.length) currentCardIdx = 0;
+        if (currentCardIdx < 0) currentCardIdx = flashcardDeck.length - 1;
+
+        const card = flashcardDeck[currentCardIdx];
+        document.getElementById('fc-flipper').classList.toggle('is-flipped', isCardFlipped);
+        document.getElementById('fc-front-tag').textContent = card.topic || 'Study';
+        document.getElementById('fc-front-q').textContent = card.q;
+        document.getElementById('fc-back-a').textContent = card.a;
+        document.getElementById('fc-deck-count').textContent = 'Card ' + (currentCardIdx + 1) + ' of ' + flashcardDeck.length;
+      }
+
+      document.getElementById('fc-stage').addEventListener('click', () => {
+        isCardFlipped = !isCardFlipped;
+        renderCurrentFlashcard();
+      });
+      document.getElementById('btn-fc-flip').addEventListener('click', () => {
+        isCardFlipped = !isCardFlipped;
+        renderCurrentFlashcard();
+      });
+      document.getElementById('btn-fc-next').addEventListener('click', () => {
+        currentCardIdx++;
+        isCardFlipped = false;
+        renderCurrentFlashcard();
+      });
+      document.getElementById('btn-fc-prev').addEventListener('click', () => {
+        currentCardIdx--;
+        isCardFlipped = false;
+        renderCurrentFlashcard();
+      });
+      document.getElementById('btn-fc-delete').addEventListener('click', () => {
+        if (flashcardDeck.length <= 1) {
+          showToast('At least one card must remain in the deck.');
+          return;
+        }
+        flashcardDeck.splice(currentCardIdx, 1);
+        writeJSON(STORAGE_KEYS.FLASHCARDS, flashcardDeck);
+        isCardFlipped = false;
+        renderCurrentFlashcard();
+        showToast('Flashcard removed.');
+      });
+
+      document.getElementById('form-add-flashcard').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const topic = document.getElementById('fc-new-topic').value.trim() || 'Study';
+        const q = document.getElementById('fc-new-q').value.trim();
+        const a = document.getElementById('fc-new-a').value.trim();
+        if (!q || !a) return;
+        flashcardDeck.push({ topic, q, a });
+        writeJSON(STORAGE_KEYS.FLASHCARDS, flashcardDeck);
+        document.getElementById('fc-new-q').value = '';
+        document.getElementById('fc-new-a').value = '';
+        currentCardIdx = flashcardDeck.length - 1;
+        isCardFlipped = false;
+        renderCurrentFlashcard();
+        showToast('Flashcard added!');
+      });
+
+      // Pomodoro Focus Timer
+      let pomoBaseSec = 25 * 60;
+      let pomoRemainSec = 25 * 60;
+      let pomoInterval = null;
+
+      function renderPomodoroClock() {
+        const mins = String(Math.floor(pomoRemainSec / 60)).padStart(2, '0');
+        const secs = String(pomoRemainSec % 60).padStart(2, '0');
+        document.getElementById('pomo-timer-display').textContent = mins + ':' + secs;
+      }
+
+      document.querySelectorAll('[data-pomo-mins]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          clearInterval(pomoInterval);
+          pomoInterval = null;
+          document.querySelectorAll('[data-pomo-mins]').forEach((b) => b.classList.remove('btn-primary'));
+          btn.classList.add('btn-primary');
+          pomoBaseSec = Number(btn.dataset.pomoMins) * 60;
+          pomoRemainSec = pomoBaseSec;
+          renderPomodoroClock();
+        });
+      });
+
+      document.getElementById('btn-pomo-start').addEventListener('click', () => {
+        if (pomoInterval) return;
+        pomoInterval = setInterval(() => {
+          if (pomoRemainSec > 0) {
+            pomoRemainSec--;
+            renderPomodoroClock();
+          } else {
+            clearInterval(pomoInterval);
+            pomoInterval = null;
+            showToast('Pomodoro timer finished!');
+          }
+        }, 1000);
+      });
+
+      document.getElementById('btn-pomo-pause').addEventListener('click', () => {
+        clearInterval(pomoInterval);
+        pomoInterval = null;
+      });
+
+      document.getElementById('btn-pomo-reset').addEventListener('click', () => {
+        clearInterval(pomoInterval);
+        pomoInterval = null;
+        pomoRemainSec = pomoBaseSec;
+        renderPomodoroClock();
+      });
+
+      // Study Notes Scratchpad
+      const notesBox = document.getElementById('study-notes-box');
+      const notesStats = document.getElementById('notes-stats');
+
+      function updateNotesStats() {
+        const text = notesBox.value.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        notesStats.textContent = 'AUTO-SAVED TO LOCALSTORAGE • ' + words + (words === 1 ? ' WORD' : ' WORDS');
+      }
+
+      notesBox.value = readJSON(STORAGE_KEYS.NOTES, '');
+      updateNotesStats();
+      notesBox.addEventListener('input', () => {
+        writeJSON(STORAGE_KEYS.NOTES, notesBox.value);
+        updateNotesStats();
+      });
+      document.getElementById('btn-notes-clear').addEventListener('click', () => {
+        notesBox.value = '';
+        writeJSON(STORAGE_KEYS.NOTES, '');
+        updateNotesStats();
+        showToast('Study scratchpad cleared.');
+      });
+
+      /* ----------------------------------------------------------------------
+         8. THEMES & STARFIELD CONTROLS
+         ---------------------------------------------------------------------- */
+      document.querySelectorAll('[data-theme-select]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          prefs.theme = btn.dataset.themeSelect;
+          applyThemeAndPrefs();
+        });
+      });
+
+      document.getElementById('slider-stars-count').addEventListener('input', (e) => {
+        prefs.starCount = Number(e.target.value);
+        applyThemeAndPrefs();
+      });
+      document.getElementById('slider-stars-speed').addEventListener('input', (e) => {
+        prefs.starSpeed = Number(e.target.value) / 10;
+        applyThemeAndPrefs();
+      });
+      document.getElementById('picker-star-tint').addEventListener('input', (e) => {
+        prefs.starTint = e.target.value;
+        applyThemeAndPrefs();
+      });
+
+      /* ----------------------------------------------------------------------
+         9. GLOBAL KEYBOARD SHORTCUTS & RESIZE HANDLERS
+         ---------------------------------------------------------------------- */
+      window.addEventListener('keydown', (e) => {
+        heldKeys[e.code] = true;
+
+        if (e.key === 'Escape') {
+          exitGameFullscreen();
+        }
+
+        const isTyping = document.activeElement &&
+          (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT');
+
+        if (!isTyping && activeNavTab === 'games') {
+          if (activeGamePane === 'dash' && (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW')) {
+            e.preventDefault();
+            triggerDashJump();
+          } else if (activeGamePane === 'snake') {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') steerSnake('LEFT');
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') steerSnake('RIGHT');
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') steerSnake('UP');
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') steerSnake('DOWN');
+          } else if (activeGamePane === 'shooter') {
+            if (['ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
+          }
+        }
+
+        if (!isTyping && activeNavTab === 'study') {
+          if (/^[0-9+\-*/^().]$/.test(e.key)) {
+            e.preventDefault();
+            handleCalcInput(e.key);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            handleCalcInput('=');
+          } else if (e.key === 'Backspace') {
+            e.preventDefault();
+            handleCalcInput('DEL');
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        heldKeys[e.code] = false;
+      });
+
+      window.addEventListener('resize', () => {
+        resizeStarCanvas();
+        sizeCanvasToBox(dashCanvas);
+        sizeCanvasToBox(snakeCanvas);
+        sizeCanvasToBox(shooterCanvas);
+      });
+
+      /* ----------------------------------------------------------------------
+         10. INITIALIZATION ON WINDOW LOAD
+         ---------------------------------------------------------------------- */
+      window.addEventListener('load', () => {
+        resizeStarCanvas();
+        applyThemeAndPrefs();
+        animateStarfield();
+        renderEntertainmentColumns();
+        renderCurrentFlashcard();
+        renderPomodoroClock();
+        renderSiteState();
+
+        // Restore remembered session if available
+        const savedRole = readJSON(STORAGE_KEYS.SESSION_ROLE, null);
+        if (savedRole === 'guest' || savedRole === 'admin') {
+          setSessionRole(savedRole);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
